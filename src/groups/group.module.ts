@@ -7,9 +7,9 @@ import { GroupService } from './group.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Group', schema: GroupSchema }]),
+    MongooseModule.forFeature([{ name: 'Group', schema: GroupSchema }])
   ],
   controllers: [GroupController],
-  providers: [GroupService],
+  providers: [GroupService]
 })
 export class GroupModule {}

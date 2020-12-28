@@ -2,23 +2,23 @@ import { Schema, Document } from 'mongoose';
 
 const MemberSchema = new Schema(
   {
-    _id: { type: String, required: true },
+    id: { type: Schema.Types.ObjectId, required: true },
     name: { type: String, required: true },
     muted: {
       type: Boolean,
-      default: false,
-    },
+      default: false
+    }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 export const GroupSchema = new Schema(
   {
     name: { type: String, required: true },
-    description: { type: String, required: true },
-    members: [MemberSchema],
+    description: String,
+    members: [MemberSchema]
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 export interface Member {

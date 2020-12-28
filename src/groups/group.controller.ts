@@ -5,7 +5,7 @@ import {
   Get,
   Param,
   Patch,
-  Post,
+  Post
 } from '@nestjs/common';
 import { GroupService } from './group.service';
 import { Group, Member } from './group.model';
@@ -22,13 +22,9 @@ export class GroupController {
   @Post()
   async createGroup(@Body() body: Group) {
     const { name, description, members = [] } = body;
-    const newGroup = await this.groupsService.createGroup(
-      name,
-      description,
-      members,
-    );
+    await this.groupsService.createGroup(name, description, members);
 
-    return { group: newGroup };
+    return null;
   }
 
   @Get(':id')
