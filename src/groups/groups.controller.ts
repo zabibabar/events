@@ -1,10 +1,10 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
-import { GroupService } from './group.service'
-import { Group, Member } from './group.model'
+import { GroupsService } from './groups.service'
+import { Group, Member } from './groups.model'
 
 @Controller('groups')
-export class GroupController {
-  constructor(private groupsService: GroupService) {}
+export class GroupsController {
+  constructor(private groupsService: GroupsService) {}
 
   @Get()
   async getGroups() {

@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 
-import { GroupController } from './group.controller'
-import { GroupSchema } from './group.model'
-import { GroupService } from './group.service'
+import { GroupsController } from './groups.controller'
+import { GroupSchema } from './groups.model'
+import { GroupsService } from './groups.service'
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: 'Group', schema: GroupSchema }])],
-  controllers: [GroupController],
-  providers: [GroupService]
+  controllers: [GroupsController],
+  providers: [GroupsService]
 })
 export class GroupModule {}

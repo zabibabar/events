@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { Group, Member } from './group.model'
+import { Group, Member } from './groups.model'
 
 @Injectable()
-export class GroupService {
+export class GroupsService {
   constructor(@InjectModel('Group') private readonly GroupModel: Model<Group>) {}
 
   async getGroups() {
