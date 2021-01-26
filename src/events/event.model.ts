@@ -1,4 +1,4 @@
-import { Schema, Document } from 'mongoose';
+import { Schema, Document } from 'mongoose'
 
 const GroupSchema = new Schema(
   {
@@ -6,7 +6,7 @@ const GroupSchema = new Schema(
     name: { type: String, required: true }
   },
   { timestamps: true }
-);
+)
 
 const OrganizerSchema = new Schema(
   {
@@ -14,7 +14,7 @@ const OrganizerSchema = new Schema(
     name: { type: String, required: true }
   },
   { timestamps: true }
-);
+)
 
 const AttendeeSchema = new Schema(
   {
@@ -26,7 +26,7 @@ const AttendeeSchema = new Schema(
     }
   },
   { timestamps: true }
-);
+)
 
 export const EventSchema = new Schema(
   {
@@ -48,30 +48,30 @@ export const EventSchema = new Schema(
     }
   },
   { timestamps: true }
-);
+)
 
 export interface Organizer {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 export interface Attendee {
-  id: string;
-  name: string;
-  going: boolean;
-  lastUpdated: Date;
+  id: string
+  name: string
+  going: boolean
+  lastUpdated: Date
 }
 
 export interface Event extends Document {
-  id: string;
-  group: string;
-  name: string;
-  timeStart: Date;
-  timeEnd: Date;
-  description: String;
-  organizers: [Organizer];
-  attendees: [Attendee];
-  address: String;
-  isRemote: Boolean;
-  hasPot: Boolean;
+  id: string
+  group: string
+  name: string
+  timeStart: Date
+  timeEnd: Date
+  description: string
+  organizers: [Organizer]
+  attendees: [Attendee]
+  address: string
+  isRemote: boolean
+  hasPot: boolean
 }

@@ -1,4 +1,4 @@
-import { Schema, Document } from 'mongoose';
+import { Schema, Document } from 'mongoose'
 
 const MemberSchema = new Schema(
   {
@@ -10,7 +10,7 @@ const MemberSchema = new Schema(
     }
   },
   { timestamps: true }
-);
+)
 
 export const GroupSchema = new Schema(
   {
@@ -19,17 +19,17 @@ export const GroupSchema = new Schema(
     members: [MemberSchema]
   },
   { timestamps: true }
-);
+)
 
 export interface Member {
-  id: string;
-  name: string;
-  muted: boolean;
+  id: string
+  name: string
+  muted: boolean
 }
 
 export interface Group extends Document {
-  id: string;
-  name: string;
-  description: string;
-  members: [Member];
+  id: string
+  name: string
+  description: string
+  members: [Member]
 }
