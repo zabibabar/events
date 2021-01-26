@@ -4,7 +4,7 @@ import { Model } from 'mongoose'
 import { Event, Attendee, Organizer } from './events.model'
 
 @Injectable()
-export class EventService {
+export class EventsService {
   constructor(@InjectModel('Event') private readonly EventModel: Model<Event>) {}
 
   async getEvents() {

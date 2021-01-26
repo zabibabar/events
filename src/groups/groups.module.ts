@@ -10,4 +10,4 @@ import { GroupsService } from './groups.service'
   controllers: [GroupsController],
   providers: [GroupsService]
 })
-export class GroupModule {}
+export class GroupsModule {}
