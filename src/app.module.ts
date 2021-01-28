@@ -9,11 +9,11 @@ import { UsersModule } from './users/users.module'
 
 @Module({
   imports: [
-    EventsModule,
-    GroupsModule,
     MongooseModule.forRoot(
       'mongodb+srv://zabi:DIo54UzkuocYJes0@cluster0.hmw5o.mongodb.net/events?retryWrites=true&w=majority'
     ),
+    EventsModule,
+    GroupsModule,
     UsersModule
   ],
   controllers: [AppController],
