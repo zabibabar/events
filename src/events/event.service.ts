@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { Event, Attendee, Organizer } from './events.model'
+
+import { EventDocument } from './schemas/event.schema'
+import { Event } from './interfaces/event.interface'
+import { Attendee } from './interfaces/attendee.interface'
+import { Organizer } from './interfaces/organizer.interface'
 
 @Injectable()
 export class EventsService {
-  constructor(@InjectModel('Event') private readonly EventModel: Model<Event>) {}
+  constructor(@InjectModel('Event') private readonly EventModel: Model<EventDocument>) {}
 
   async getEvents() {
     const events = await this.EventModel.find().exec()
@@ -61,7 +65,7 @@ export class EventsService {
   }
 
   private async findEvent(eventdID: string) {
-    let event
+    let event: EventDocument
     try {
       event = await this.EventModel.findById(eventdID).exec()
     } catch {
@@ -70,7 +74,7 @@ export class EventsService {
       if (!event) {
         throw new NotFoundException('Event not found')
       }
-      return event as Event
+      return event
     }
   }
 }

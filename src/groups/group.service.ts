@@ -1,15 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { Group, Member } from './groups.model'
+
+import { GroupDocument } from './schemas/group.schema'
+import { Group } from './interfaces/group.interface'
+import { Member } from './interfaces/member.interface'
 
 @Injectable()
-export class GroupsService {
-  constructor(@InjectModel('Group') private readonly GroupModel: Model<Group>) {}
+export class GroupService {
+  constructor(@InjectModel('Group') private readonly GroupModel: Model<GroupDocument>) {}
 
   async getGroups() {
-    const groups = await this.GroupModel.find().exec()
-    return groups.map(({ id, name, description, members }) => ({
+    const group = await this.GroupModel.find().exec()
+    return group.map(({ id, name, description, members }) => ({
       id,
       name,
       description,

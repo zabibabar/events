@@ -1,32 +1,14 @@
 import { Schema, Document } from 'mongoose'
+import { Attendee } from '../interfaces/attendee.interface'
+import { Organizer } from '../interfaces/organizer.interface'
 
-const GroupSchema = new Schema(
-  {
-    id: { type: Schema.Types.ObjectId, ref: 'Group' },
-    name: { type: String, required: true }
-  },
-  { timestamps: true }
-)
+import { AttendeeSchema } from './attendee.schema'
+import { OrganizerSchema } from './organizer.schema'
 
-const OrganizerSchema = new Schema(
-  {
-    id: { type: Schema.Types.ObjectId, required: true },
-    name: { type: String, required: true }
-  },
-  { timestamps: true }
-)
-
-const AttendeeSchema = new Schema(
-  {
-    id: { type: Schema.Types.ObjectId, required: true },
-    name: { type: String, required: true },
-    going: {
-      type: Boolean,
-      default: false
-    }
-  },
-  { timestamps: true }
-)
+const GroupSchema = new Schema({
+  id: { type: Schema.Types.ObjectId, ref: 'Group' },
+  name: { type: String, required: true }
+})
 
 export const EventSchema = new Schema(
   {
@@ -50,19 +32,7 @@ export const EventSchema = new Schema(
   { timestamps: true }
 )
 
-export interface Organizer {
-  id: string
-  name: string
-}
-
-export interface Attendee {
-  id: string
-  name: string
-  going: boolean
-  lastUpdated: Date
-}
-
-export interface Event extends Document {
+export interface EventDocument extends Document {
   id: string
   group: string
   name: string

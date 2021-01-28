@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
-import { EventsService } from './events.service'
-import { Event } from './events.model'
+import { EventsService } from './event.service'
+import { Event } from './interfaces/event.interface'
 
 @Controller('Events')
 export class EventsController {

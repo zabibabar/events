@@ -9,7 +9,7 @@ export const UsersSchema = new Schema(
   { timestamps: true }
 )
 
-export interface User extends Document {
+export interface UserDocument extends Document {
   id: string
   firstName: string
   lastName: string

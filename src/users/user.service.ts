@@ -1,16 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { User } from './models/user.model'
 
-import { CreateUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
+import { UserDocument } from './schemas/user.schema'
+import { User } from './interfaces/user.interface'
+import { CreateUserDTO } from './dto/create-user.dto'
+import { UpdateUserDTO } from './dto/update-user.dto'
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('User') private readonly UserModel: Model<User>) {}
+  constructor(@InjectModel('User') private readonly UserModel: Model<UserDocument>) {}
 
-  async getAllUsers() {
+  async getAllUsers(): Promise<User[]> {
     const users = await this.UserModel.find().exec()
     return users.map(({ id, firstName, lastName, email }) => ({
       id,
@@ -20,12 +21,12 @@ export class UsersService {
     })) as User[]
   }
 
-  async createUser({ firstName, lastName, email }: CreateUserDto) {
+  async createUser({ firstName, lastName, email }: CreateUserDTO): Promise<User> {
     const newUser = new this.UserModel({ firstName, lastName, email })
     return newUser.save()
   }
 
-  async getUser(userdID: string) {
+  async getUser(userdID: string): Promise<User> {
     const user = await this.findUser(userdID)
     return {
       id: user.id,
@@ -35,17 +36,17 @@ export class UsersService {
     } as User
   }
 
-  async updateUser(userID: string, userFields: UpdateUserDto) {
+  async updateUser(userID: string, userFields: UpdateUserDTO): Promise<void> {
     await this.UserModel.updateOne({ _id: userID }, { $set: userFields }).exec()
   }
 
-  async deleteUser(userID: string) {
+  async deleteUser(userID: string): Promise<void> {
     const result = await this.UserModel.deleteOne({ _id: userID }).exec()
     if (result.n === 0) throw new NotFoundException('User not found')
   }
 
-  private async findUser(userdID: string) {
-    let user
+  private async findUser(userdID: string): Promise<UserDocument> {
+    let user: UserDocument
     try {
       user = await this.UserModel.findById(userdID).exec()
     } catch {
@@ -54,7 +55,7 @@ export class UsersService {
       if (!user) {
         throw new NotFoundException('User not found')
       }
-      return user as User
+      return user
     }
   }
 }

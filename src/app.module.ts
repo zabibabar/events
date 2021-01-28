@@ -3,9 +3,9 @@ import { MongooseModule } from '@nestjs/mongoose'
 
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
-import { EventsModule } from './events/events.module'
-import { GroupsModule } from './groups/groups.module'
-import { UsersModule } from './users/users.module'
+import { EventsModule } from './events/event.module'
+import { GroupModule } from './groups/group.module'
+import { UsersModule } from './users/user.module'
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import { UsersModule } from './users/users.module'
       'mongodb+srv://zabi:DIo54UzkuocYJes0@cluster0.hmw5o.mongodb.net/events?retryWrites=true&w=majority'
     ),
     EventsModule,
-    GroupsModule,
+    GroupModule,
     UsersModule
   ],
   controllers: [AppController],
