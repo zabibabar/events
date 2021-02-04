@@ -16,5 +16,5 @@ export interface GroupDocument extends Document {
   id: string
   name: string
   description: string
-  members: [Member]
+  members: Member[]
 }

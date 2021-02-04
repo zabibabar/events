@@ -39,8 +39,8 @@ export interface EventDocument extends Document {
   timeStart: Date
   timeEnd: Date
   description: string
-  organizers: [Organizer]
-  attendees: [Attendee]
+  organizers: Organizer[]
+  attendees: Attendee[]
   address: string
   isRemote: boolean
   hasPot: boolean

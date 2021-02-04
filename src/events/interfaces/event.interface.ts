@@ -7,10 +7,10 @@ export interface Event {
   name: string
   timeStart: Date
   timeEnd: Date
-  description: string
-  organizers: [Organizer]
-  attendees: [Attendee]
+  description?: string
+  organizers: Organizer[]
+  attendees?: Attendee[]
   address: string
-  isRemote: boolean
-  hasPot: boolean
+  isRemote?: boolean
+  hasPot?: boolean
 }
