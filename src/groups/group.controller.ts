@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 import { CreateGroupDTO } from './dto/create-group.dto'
 import { UpdateGroupDTO } from './dto/update-group.dto'
 
@@ -27,7 +27,7 @@ export class GroupController {
     return await this.groupService.getGroup(id)
   }
 
-  @Patch(':id')
+  @Put(':id')
   async updateGroup(@Param('id') id: string, @Body() body: UpdateGroupDTO): Promise<void> {
     await this.groupService.updateGroup(id, body)
     return null

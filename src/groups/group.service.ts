@@ -38,7 +38,7 @@ export class GroupService {
   }
 
   async updateGroup(groupdID: string, groupFields: UpdateGroupDTO): Promise<void> {
-    delete groupFields.members
+    // delete groupFields.members
     await this.GroupModel.updateOne({ _id: groupdID }, { $set: groupFields }).exec()
   }
 
