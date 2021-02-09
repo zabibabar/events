@@ -1,4 +1,3 @@
 export interface Organizer {
-  id: string
-  name: string
+  organizer: string
 }

@@ -1,9 +1,14 @@
 import { Schema, Document } from 'mongoose'
+import { USER_COLLECTION_NAME } from 'src/users/schemas/user.schema'
 
 export const AttendeeSchema = new Schema(
   {
-    id: { type: Schema.Types.ObjectId, required: true, unique: true },
-    name: { type: String, required: true },
+    attendee: {
+      type: Schema.Types.ObjectId,
+      ref: USER_COLLECTION_NAME,
+      required: true,
+      unique: true
+    },
     going: {
       type: Boolean,
       default: false
@@ -13,8 +18,7 @@ export const AttendeeSchema = new Schema(
 )
 
 export interface AttendeeDocument extends Document {
-  id: string
-  name: string
+  attendee: string
   going: boolean
   lastUpdated: Date
 }

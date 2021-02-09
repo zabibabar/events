@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { EventDocument } from './schemas/event.schema'
+import { EventDocument, EVENT_COLLECTION_NAME } from './schemas/event.schema'
 import { Event } from './interfaces/event.interface'
 import { Attendee } from './interfaces/attendee.interface'
 import { Organizer } from './interfaces/organizer.interface'
@@ -11,7 +11,9 @@ import { CreateEventDTO } from './dto/create-event.dto'
 
 @Injectable()
 export class EventsService {
-  constructor(@InjectModel('Event') private readonly EventModel: Model<EventDocument>) {}
+  constructor(
+    @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>
+  ) {}
 
   async getEvents(): Promise<Event[]> {
     const events = await this.EventModel.find().exec()
@@ -48,7 +50,7 @@ export class EventsService {
   async removeEventOrganizers(eventdID: string, organizers: string[]): Promise<void> {
     await this.EventModel.updateOne(
       { _id: eventdID },
-      { $pull: { organizers: { id: { $in: organizers } } } }
+      { $pull: { organizers: { organizer: { $in: organizers } } } }
     ).exec()
   }
 
@@ -62,7 +64,7 @@ export class EventsService {
   async removeEventAttendees(eventdID: string, attendees: string[]): Promise<void> {
     await this.EventModel.updateOne(
       { _id: eventdID },
-      { $pull: { attendees: { id: { $in: attendees } } } }
+      { $pull: { attendees: { attendee: { $in: attendees } } } }
     ).exec()
   }
 

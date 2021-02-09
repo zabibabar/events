@@ -1,9 +1,14 @@
 import { Schema, Document } from 'mongoose'
+import { USER_COLLECTION_NAME } from 'src/users/schemas/user.schema'
 
 export const MemberSchema = new Schema(
   {
-    id: { type: Schema.Types.ObjectId, required: true, unique: true },
-    name: { type: String, required: true },
+    member: {
+      type: Schema.Types.ObjectId,
+      ref: USER_COLLECTION_NAME,
+      required: true,
+      unique: true
+    },
     muted: {
       type: Boolean,
       default: false
@@ -13,7 +18,6 @@ export const MemberSchema = new Schema(
 )
 
 export interface MemberDocument extends Document {
-  id: string
-  name: string
+  member: string
   muted: boolean
 }

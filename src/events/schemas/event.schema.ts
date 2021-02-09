@@ -45,3 +45,5 @@ export interface EventDocument extends Document {
   isRemote: boolean
   hasPot: boolean
 }
+
+export const EVENT_COLLECTION_NAME = 'Event'

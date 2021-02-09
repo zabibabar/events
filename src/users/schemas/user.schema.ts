@@ -15,3 +15,5 @@ export interface UserDocument extends Document {
   lastName: string
   email: string
 }
+
+export const USER_COLLECTION_NAME = 'User'

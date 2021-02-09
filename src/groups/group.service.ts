@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { GroupDocument } from './schemas/group.schema'
+import { GroupDocument, GROUP_COLLECTION_NAME } from './schemas/group.schema'
 import { Group } from './interfaces/group.interface'
 import { Member } from './interfaces/member.interface'
 import { CreateGroupDTO } from './dto/create-group.dto'
@@ -10,10 +10,17 @@ import { UpdateGroupDTO } from './dto/update-group.dto'
 
 @Injectable()
 export class GroupService {
-  constructor(@InjectModel('Group') private readonly GroupModel: Model<GroupDocument>) {}
+  constructor(
+    @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>
+  ) {}
 
   async getGroups(): Promise<Group[]> {
-    const group = await this.GroupModel.find().exec()
+    const group = await this.GroupModel.find()
+      .populate({
+        path: 'members.member',
+        model: 'User'
+      })
+      .exec()
     return group.map(({ id, name, description, members }) => ({
       id,
       name,
@@ -57,7 +64,7 @@ export class GroupService {
   async removeGroupMembers(groupdID: string, members: string[]): Promise<void> {
     await this.GroupModel.updateOne(
       { _id: groupdID },
-      { $pull: { members: { id: { $in: members } } } }
+      { $pull: { members: { member: { $in: members } } } }
     ).exec()
   }
 

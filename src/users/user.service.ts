@@ -2,14 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { UserDocument } from './schemas/user.schema'
+import { UserDocument, USER_COLLECTION_NAME } from './schemas/user.schema'
 import { User } from './interfaces/user.interface'
 import { CreateUserDTO } from './dto/create-user.dto'
 import { UpdateUserDTO } from './dto/update-user.dto'
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('User') private readonly UserModel: Model<UserDocument>) {}
+  constructor(@InjectModel(USER_COLLECTION_NAME) private readonly UserModel: Model<UserDocument>) {}
 
   async getAllUsers(): Promise<User[]> {
     const users = await this.UserModel.find().exec()

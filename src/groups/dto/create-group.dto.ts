@@ -28,11 +28,7 @@ export class CreateGroupDTO {
 export class MemberDTO {
   @IsString()
   @IsMongoId()
-  id: string
-
-  @IsString()
-  @IsNotEmpty()
-  name: string
+  member: string
 
   @IsOptional()
   @IsBoolean()

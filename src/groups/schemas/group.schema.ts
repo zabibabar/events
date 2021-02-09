@@ -18,3 +18,5 @@ export interface GroupDocument extends Document {
   description: string
   members: Member[]
 }
+
+export const GROUP_COLLECTION_NAME = 'Group'
