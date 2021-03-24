@@ -1,4 +1,5 @@
 export interface Attendee {
   attendee: string
-  going?: boolean
+  going: boolean
+  isOrganizer: boolean
 }

@@ -12,6 +12,10 @@ export const AttendeeSchema = new Schema(
     going: {
       type: Boolean,
       default: false
+    },
+    isOrganizer: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: { createdAt: true }, _id: false }
@@ -20,5 +24,6 @@ export const AttendeeSchema = new Schema(
 export interface AttendeeDocument extends Document {
   attendee: string
   going: boolean
+  isOrganizer: boolean
   lastUpdated: Date
 }

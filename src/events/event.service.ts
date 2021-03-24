@@ -5,7 +5,6 @@ import { Model } from 'mongoose'
 import { EventDocument, EVENT_COLLECTION_NAME } from './schemas/event.schema'
 import { Event } from './interfaces/event.interface'
 import { Attendee } from './interfaces/attendee.interface'
-import { Organizer } from './interfaces/organizer.interface'
 import { UpdateEventDTO } from './dto/update-event.dto'
 import { CreateEventDTO } from './dto/create-event.dto'
 
@@ -25,14 +24,14 @@ export class EventsService {
     return newEvent.save()
   }
 
-  async getEvent(eventdID: string): Promise<Event> {
-    const event = await this.findEvent(eventdID)
+  async getEvent(eventID: string): Promise<Event> {
+    const event = await this.findEvent(eventID)
     return event
   }
 
-  async updateEvent(eventdID: string, EventFields: UpdateEventDTO): Promise<void> {
+  async updateEvent(eventID: string, EventFields: UpdateEventDTO): Promise<void> {
     delete EventFields.attendees
-    await this.EventModel.updateOne({ _id: eventdID }, { $set: EventFields }).exec()
+    await this.EventModel.updateOne({ _id: eventID }, { $set: EventFields }).exec()
   }
 
   async deleteEvent(EventID: string): Promise<void> {
@@ -40,38 +39,24 @@ export class EventsService {
     if (result.n === 0) throw new NotFoundException('Event not found')
   }
 
-  async addEventOrganizers(eventdID: string, organizers: Organizer[]): Promise<void> {
+  async addEventAttendees(eventID: string, attendees: Attendee[]): Promise<void> {
     await this.EventModel.updateOne(
-      { _id: eventdID },
-      { $push: { organizers: { $each: organizers } } }
-    ).exec()
-  }
-
-  async removeEventOrganizers(eventdID: string, organizers: string[]): Promise<void> {
-    await this.EventModel.updateOne(
-      { _id: eventdID },
-      { $pull: { organizers: { organizer: { $in: organizers } } } }
-    ).exec()
-  }
-
-  async addEventAttendees(eventdID: string, attendees: Attendee[]): Promise<void> {
-    await this.EventModel.updateOne(
-      { _id: eventdID },
+      { _id: eventID },
       { $push: { attendees: { $each: attendees } } }
     ).exec()
   }
 
-  async removeEventAttendees(eventdID: string, attendees: string[]): Promise<void> {
+  async removeEventAttendees(eventID: string, attendees: string[]): Promise<void> {
     await this.EventModel.updateOne(
-      { _id: eventdID },
+      { _id: eventID },
       { $pull: { attendees: { attendee: { $in: attendees } } } }
     ).exec()
   }
 
-  private async findEvent(eventdID: string): Promise<EventDocument> {
+  private async findEvent(eventID: string): Promise<EventDocument> {
     let event: EventDocument
     try {
-      event = await this.EventModel.findById(eventdID).exec()
+      event = await this.EventModel.findById(eventID).exec()
     } catch {
       throw new NotFoundException('Event not found')
     } finally {

@@ -33,12 +33,6 @@ export class CreateEventDTO {
   @IsArray()
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => OrganizerDTO)
-  organizers: OrganizerDTO[]
-
-  @IsArray()
-  @IsOptional()
-  @ValidateNested({ each: true })
   @Type(() => AttendeeDTO)
   attendees?: AttendeeDTO[]
 
@@ -46,18 +40,10 @@ export class CreateEventDTO {
   address: string
 
   @IsBoolean()
-  @IsOptional()
-  isRemote?: boolean
+  isRemote: boolean
 
   @IsBoolean()
-  @IsOptional()
-  hasPot?: boolean
-}
-
-export class OrganizerDTO {
-  @IsString()
-  @IsMongoId()
-  organizer: string
+  hasPot: boolean
 }
 
 export class AttendeeDTO {
@@ -65,7 +51,9 @@ export class AttendeeDTO {
   @IsMongoId()
   attendee: string
 
-  @IsOptional()
   @IsBoolean()
-  going?: boolean
+  going: boolean
+
+  @IsBoolean()
+  isOrganizer: boolean
 }

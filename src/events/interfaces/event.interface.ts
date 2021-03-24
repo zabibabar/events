@@ -1,5 +1,4 @@
 import { Attendee } from './attendee.interface'
-import { Organizer } from './organizer.interface'
 
 export interface Event {
   id: string
@@ -8,7 +7,6 @@ export interface Event {
   timeStart: Date
   timeEnd: Date
   description?: string
-  organizers: Organizer[]
   attendees?: Attendee[]
   address: string
   isRemote?: boolean

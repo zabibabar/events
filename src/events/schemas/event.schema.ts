@@ -1,9 +1,7 @@
 import { Schema, Document } from 'mongoose'
 import { Attendee } from '../interfaces/attendee.interface'
-import { Organizer } from '../interfaces/organizer.interface'
 
 import { AttendeeSchema } from './attendee.schema'
-import { OrganizerSchema } from './organizer.schema'
 
 const GroupSchema = new Schema({
   id: { type: Schema.Types.ObjectId, ref: 'Group' },
@@ -17,7 +15,6 @@ export const EventSchema = new Schema(
     timeStart: { type: Date, required: true },
     timeEnd: { type: Date, required: true },
     description: String,
-    organizers: { type: [OrganizerSchema], required: true },
     attendees: [AttendeeSchema],
     address: { type: String, required: true },
     isRemote: {
@@ -39,7 +36,6 @@ export interface EventDocument extends Document {
   timeStart: Date
   timeEnd: Date
   description: string
-  organizers: Organizer[]
   attendees: Attendee[]
   address: string
   isRemote: boolean
