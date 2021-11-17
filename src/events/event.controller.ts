@@ -5,7 +5,7 @@ import { UpdateEventDTO } from './dto/update-event.dto'
 import { EventsService } from './event.service'
 import { Event } from './interfaces/event.interface'
 
-@Controller('Events')
+@Controller('events')
 export class EventsController {
   constructor(private EventsService: EventsService) {}
 
