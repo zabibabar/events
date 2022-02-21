@@ -9,7 +9,7 @@ dotenv.config()
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private config: ConfigService) {
+  constructor(config: ConfigService) {
     super({
       secretOrKeyProvider: passportJwtSecret({
         cache: true,
@@ -17,7 +17,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         jwksRequestsPerMinute: 5,
         jwksUri: `${config.get<string>('AUTH0_ISSUER_URL')}.well-known/jwks.json`
       }),
-
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       audience: config.get<string>('AUTH0_AUDIENCE'),
       issuer: config.get<string>('AUTH0_ISSUER_URL'),

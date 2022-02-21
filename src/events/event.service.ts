@@ -54,7 +54,7 @@ export class EventsService {
   }
 
   private async findEvent(eventID: string): Promise<EventDocument> {
-    let event: EventDocument
+    let event: EventDocument | null = null
     try {
       event = await this.EventModel.findById(eventID).exec()
     } catch {

@@ -26,7 +26,7 @@ export class GroupService {
       name,
       description,
       members
-    })) as Group[]
+    }))
   }
 
   async createGroup({ name, description, members }: CreateGroupDTO): Promise<Group> {
@@ -34,19 +34,19 @@ export class GroupService {
     return newGroup.save()
   }
 
-  async getGroup(groupdID: string): Promise<Group> {
-    const group = await this.findGroup(groupdID)
+  async getGroup(groupID: string): Promise<Group> {
+    const group = await this.findGroup(groupID)
     return {
       id: group.id,
       name: group.name,
       description: group.description,
       members: group.members
-    } as Group
+    }
   }
 
-  async updateGroup(groupdID: string, groupFields: UpdateGroupDTO): Promise<void> {
-    // delete groupFields.members
-    await this.GroupModel.updateOne({ _id: groupdID }, { $set: groupFields }).exec()
+  async updateGroup(groupID: string, groupFields: UpdateGroupDTO): Promise<void> {
+    // TODO: delete groupFields.members
+    await this.GroupModel.updateOne({ _id: groupID }, { $set: groupFields }).exec()
   }
 
   async deleteGroup(groupID: string): Promise<void> {
@@ -54,24 +54,24 @@ export class GroupService {
     if (result.n === 0) throw new NotFoundException('Group not found')
   }
 
-  async addGroupMembers(groupdID: string, members: Member[]): Promise<void> {
+  async addGroupMembers(groupID: string, members: Member[]): Promise<void> {
     await this.GroupModel.updateOne(
-      { _id: groupdID },
+      { _id: groupID },
       { $push: { members: { $each: members } } }
     ).exec()
   }
 
-  async removeGroupMembers(groupdID: string, members: string[]): Promise<void> {
+  async removeGroupMembers(groupID: string, members: string[]): Promise<void> {
     await this.GroupModel.updateOne(
-      { _id: groupdID },
+      { _id: groupID },
       { $pull: { members: { member: { $in: members } } } }
     ).exec()
   }
 
-  private async findGroup(groupdID: string): Promise<GroupDocument> {
-    let group: GroupDocument
+  private async findGroup(groupID: string): Promise<GroupDocument> {
+    let group: GroupDocument | null = null
     try {
-      group = await this.GroupModel.findById(groupdID).exec()
+      group = await this.GroupModel.findById(groupID).exec()
     } catch {
       throw new NotFoundException('Group not found')
     } finally {

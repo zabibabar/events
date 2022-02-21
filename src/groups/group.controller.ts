@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put
+} from '@nestjs/common'
 import { CreateGroupDTO } from './dto/create-group.dto'
 import { UpdateGroupDTO } from './dto/update-group.dto'
 
@@ -11,15 +21,13 @@ export class GroupController {
   constructor(private groupService: GroupService) {}
 
   @Get()
-  async getGroups(): Promise<Group[]> {
-    return await this.groupService.getGroups()
+  getGroups(): Promise<Group[]> {
+    return this.groupService.getGroups()
   }
 
   @Post()
   async createGroup(@Body() body: CreateGroupDTO): Promise<Group> {
-    await this.groupService.createGroup(body)
-
-    return null
+    return this.groupService.createGroup(body)
   }
 
   @Get(':id')
@@ -28,26 +36,24 @@ export class GroupController {
   }
 
   @Put(':id')
-  async updateGroup(@Param('id') id: string, @Body() body: UpdateGroupDTO): Promise<void> {
-    await this.groupService.updateGroup(id, body)
-    return null
+  updateGroup(@Param('id') id: string, @Body() body: UpdateGroupDTO): Promise<void> {
+    return this.groupService.updateGroup(id, body)
   }
 
   @Delete(':id')
-  async deleteGroup(@Param('id') id: string): Promise<void> {
-    await this.groupService.deleteGroup(id)
-    return null
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteGroup(@Param('id') id: string): Promise<void> {
+    return this.groupService.deleteGroup(id)
   }
 
   @Post(':id/members')
-  async addGroupMember(@Param('id') id: string, @Body() body: Member[]): Promise<void> {
-    await this.groupService.addGroupMembers(id, body)
-    return null
+  addGroupMembers(@Param('id') id: string, @Body() body: Member[]): Promise<void> {
+    return this.groupService.addGroupMembers(id, body)
   }
 
   @Delete(':id/members')
-  async removeGroupMembers(@Param('id') id: string, @Body() body: string[]): Promise<void> {
-    await this.groupService.removeGroupMembers(id, body)
-    return null
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeGroupMembers(@Param('id') id: string, @Body() body: string[]): Promise<void> {
+    return this.groupService.removeGroupMembers(id, body)
   }
 }

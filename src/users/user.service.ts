@@ -26,8 +26,8 @@ export class UsersService {
     return newUser.save()
   }
 
-  async getUser(userdID: string): Promise<User> {
-    const user = await this.findUser(userdID)
+  async getUser(userID: string): Promise<User> {
+    const user = await this.findUser(userID)
     return {
       id: user.id,
       firstName: user.firstName,
@@ -45,10 +45,10 @@ export class UsersService {
     if (result.n === 0) throw new NotFoundException('User not found')
   }
 
-  private async findUser(userdID: string): Promise<UserDocument> {
-    let user: UserDocument
+  private async findUser(userID: string): Promise<UserDocument> {
+    let user: UserDocument | null = null
     try {
-      user = await this.UserModel.findById(userdID).exec()
+      user = await this.UserModel.findById(userID).exec()
     } catch {
       throw new NotFoundException('User not found')
     } finally {
