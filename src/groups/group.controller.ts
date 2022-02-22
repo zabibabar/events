@@ -36,7 +36,7 @@ export class GroupController {
   }
 
   @Put(':id')
-  updateGroup(@Param('id') id: string, @Body() body: UpdateGroupDTO): Promise<void> {
+  updateGroup(@Param('id') id: string, @Body() body: UpdateGroupDTO): Promise<Group> {
     return this.groupService.updateGroup(id, body)
   }
 
@@ -47,7 +47,7 @@ export class GroupController {
   }
 
   @Post(':id/members')
-  addGroupMembers(@Param('id') id: string, @Body() body: Member[]): Promise<void> {
+  addGroupMembers(@Param('id') id: string, @Body() body: string[]): Promise<Member[]> {
     return this.groupService.addGroupMembers(id, body)
   }
 
