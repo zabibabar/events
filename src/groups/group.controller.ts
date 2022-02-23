@@ -6,8 +6,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Post,
-  Put
+  Patch,
+  Post
 } from '@nestjs/common'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 import { CreateGroupDTO } from './dto/create-group.dto'
@@ -36,7 +36,7 @@ export class GroupController {
     return await this.groupService.getGroup(id)
   }
 
-  @Put(':id')
+  @Patch(':id')
   updateGroup(@Param() { id }: MongoIdParams, @Body() body: UpdateGroupDTO): Promise<Group> {
     return this.groupService.updateGroup(id, body)
   }

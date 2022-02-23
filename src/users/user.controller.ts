@@ -3,11 +3,11 @@ import {
   Get,
   Post,
   Body,
-  Put,
   Param,
   Delete,
   HttpCode,
-  HttpStatus
+  HttpStatus,
+  Patch
 } from '@nestjs/common'
 
 import { UserService } from './user.service'
@@ -35,7 +35,7 @@ export class UsersController {
     return this.userService.getUser(id)
   }
 
-  @Put(':id')
+  @Patch(':id')
   update(@Param() { id }: MongoIdParams, @Body() updateUserDTO: UpdateUserDTO): Promise<User> {
     return this.userService.updateUser(id, updateUserDTO)
   }
