@@ -9,29 +9,34 @@ import { UpdateEventDTO } from './dto/update-event.dto'
 import { CreateEventDTO } from './dto/create-event.dto'
 
 @Injectable()
-export class EventsService {
+export class EventService {
   constructor(
     @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>
   ) {}
 
   async getEvents(): Promise<Event[]> {
     const events = await this.EventModel.find().exec()
-    return events
+    return events.map((event) => this.convertEventDocumentToEvent(event))
   }
 
   async createEvent(body: CreateEventDTO): Promise<Event> {
     const newEvent = new this.EventModel(body)
-    return newEvent.save()
+    return this.convertEventDocumentToEvent(await newEvent.save())
   }
 
-  async getEvent(eventID: string): Promise<Event> {
-    const event = await this.findEvent(eventID)
-    return event
+  getEvent(eventID: string): Promise<Event> {
+    return this.findEvent(eventID)
   }
 
-  async updateEvent(eventID: string, EventFields: UpdateEventDTO): Promise<void> {
-    delete EventFields.attendees
-    await this.EventModel.updateOne({ _id: eventID }, { $set: EventFields }).exec()
+  async updateEvent(eventID: string, eventFields: UpdateEventDTO): Promise<Event> {
+    delete eventFields.attendees
+    const eventDoc = await this.EventModel.findOneAndUpdate(
+      { _id: eventID },
+      { $set: eventFields },
+      { new: true }
+    ).exec()
+
+    return this.convertEventDocumentToEvent(eventDoc)
   }
 
   async deleteEvent(EventID: string): Promise<void> {
@@ -39,11 +44,14 @@ export class EventsService {
     if (result.n === 0) throw new NotFoundException('Event not found')
   }
 
-  async addEventAttendees(eventID: string, attendees: Attendee[]): Promise<void> {
-    await this.EventModel.updateOne(
+  async addEventAttendees(eventID: string, attendees: Attendee[]): Promise<Attendee[]> {
+    const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventID },
-      { $push: { attendees: { $each: attendees } } }
+      { $addToSet: { attendees: { $each: attendees } } },
+      { new: true }
     ).exec()
+
+    return this.convertEventDocumentToEvent(eventDoc).attendees
   }
 
   async removeEventAttendees(eventID: string, attendees: string[]): Promise<void> {
@@ -53,17 +61,45 @@ export class EventsService {
     ).exec()
   }
 
-  private async findEvent(eventID: string): Promise<EventDocument> {
+  private async findEvent(eventID: string): Promise<Event> {
     let event: EventDocument | null = null
     try {
       event = await this.EventModel.findById(eventID).exec()
     } catch {
       throw new NotFoundException('Event not found')
     } finally {
-      if (!event) {
-        throw new NotFoundException('Event not found')
-      }
-      return event
+      return this.convertEventDocumentToEvent(event)
+    }
+  }
+
+  private convertEventDocumentToEvent(eventDoc: EventDocument | null): Event {
+    if (!eventDoc) {
+      throw new NotFoundException('Event not found')
+    }
+
+    const {
+      id,
+      group,
+      name,
+      timeStart,
+      timeEnd,
+      description,
+      attendees,
+      address,
+      isRemote,
+      hasPot
+    } = eventDoc
+    return {
+      id,
+      group,
+      name,
+      timeStart,
+      timeEnd,
+      description,
+      attendees,
+      address,
+      isRemote,
+      hasPot
     }
   }
 }

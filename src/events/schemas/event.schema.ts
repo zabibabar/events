@@ -1,30 +1,20 @@
 import { Schema, Document } from 'mongoose'
+import { GROUP_COLLECTION_NAME } from 'src/groups/schemas/group.schema'
 import { Attendee } from '../interfaces/attendee.interface'
 
 import { AttendeeSchema } from './attendee.schema'
 
-const GroupSchema = new Schema({
-  id: { type: Schema.Types.ObjectId, ref: 'Group' },
-  name: { type: String, required: true }
-})
-
 export const EventSchema = new Schema(
   {
     name: { type: String, required: true },
-    group: { type: GroupSchema, required: true },
+    group: { type: Schema.Types.ObjectId, ref: GROUP_COLLECTION_NAME, required: true },
     timeStart: { type: Date, required: true },
     timeEnd: { type: Date, required: true },
     description: String,
     attendees: [AttendeeSchema],
     address: { type: String, required: true },
-    isRemote: {
-      type: Boolean,
-      default: false
-    },
-    hasPot: {
-      type: Boolean,
-      default: false
-    }
+    isRemote: { type: Boolean, default: false },
+    hasPot: { type: Boolean, default: false }
   },
   { timestamps: true }
 )

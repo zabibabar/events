@@ -12,18 +12,19 @@ import { Type } from 'class-transformer'
 
 export class CreateEventDTO {
   @IsString()
-  @IsMongoId()
-  @IsNotEmpty()
-  id: string
-
-  @IsString()
   @IsNotEmpty()
   name: string
 
+  @IsString()
+  @IsMongoId()
+  group: string
+
   @IsDate()
+  @Type(() => Date)
   timeStart: Date
 
   @IsDate()
+  @Type(() => Date)
   timeEnd: Date
 
   @IsString()
@@ -34,9 +35,10 @@ export class CreateEventDTO {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => AttendeeDTO)
-  attendees?: AttendeeDTO[]
+  attendees: AttendeeDTO[] = []
 
   @IsString()
+  @IsNotEmpty()
   address: string
 
   @IsBoolean()
