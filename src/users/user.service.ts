@@ -8,36 +8,31 @@ import { CreateUserDTO } from './dto/create-user.dto'
 import { UpdateUserDTO } from './dto/update-user.dto'
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(@InjectModel(USER_COLLECTION_NAME) private readonly UserModel: Model<UserDocument>) {}
 
   async getAllUsers(): Promise<User[]> {
     const users = await this.UserModel.find().exec()
-    return users.map(({ id, firstName, lastName, email }) => ({
-      id,
-      firstName,
-      lastName,
-      email
-    })) as User[]
+    return users.map((userDoc) => this.convertUserDocumentToUser(userDoc))
   }
 
   async createUser({ firstName, lastName, email }: CreateUserDTO): Promise<User> {
     const newUser = new this.UserModel({ firstName, lastName, email })
-    return newUser.save()
+    return this.convertUserDocumentToUser(await newUser.save())
   }
 
-  async getUser(userID: string): Promise<User> {
-    const user = await this.findUser(userID)
-    return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email
-    } as User
+  getUser(userID: string): Promise<User> {
+    return this.findUser(userID)
   }
 
-  async updateUser(userID: string, userFields: UpdateUserDTO): Promise<void> {
-    await this.UserModel.updateOne({ _id: userID }, { $set: userFields }).exec()
+  async updateUser(userID: string, userFields: UpdateUserDTO): Promise<User> {
+    const userDoc = await this.UserModel.findOneAndUpdate(
+      { _id: userID },
+      { $set: userFields },
+      { new: true }
+    ).exec()
+
+    return this.convertUserDocumentToUser(userDoc)
   }
 
   async deleteUser(userID: string): Promise<void> {
@@ -45,17 +40,23 @@ export class UsersService {
     if (result.n === 0) throw new NotFoundException('User not found')
   }
 
-  private async findUser(userID: string): Promise<UserDocument> {
+  private async findUser(userID: string): Promise<User> {
     let user: UserDocument | null = null
     try {
       user = await this.UserModel.findById(userID).exec()
     } catch {
       throw new NotFoundException('User not found')
     } finally {
-      if (!user) {
-        throw new NotFoundException('User not found')
-      }
-      return user
+      return this.convertUserDocumentToUser(user)
     }
+  }
+
+  private convertUserDocumentToUser(userDoc: UserDocument | null): User {
+    if (!userDoc) {
+      throw new NotFoundException('User not found')
+    }
+
+    const { id, firstName, lastName, email } = userDoc
+    return { id, firstName, lastName, email }
   }
 }

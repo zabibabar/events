@@ -9,6 +9,7 @@ import {
   Post,
   Put
 } from '@nestjs/common'
+import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 import { CreateGroupDTO } from './dto/create-group.dto'
 import { UpdateGroupDTO } from './dto/update-group.dto'
 
@@ -31,29 +32,29 @@ export class GroupController {
   }
 
   @Get(':id')
-  async getGroup(@Param('id') id: string): Promise<Group> {
+  async getGroup(@Param() { id }: MongoIdParams): Promise<Group> {
     return await this.groupService.getGroup(id)
   }
 
   @Put(':id')
-  updateGroup(@Param('id') id: string, @Body() body: UpdateGroupDTO): Promise<Group> {
+  updateGroup(@Param() { id }: MongoIdParams, @Body() body: UpdateGroupDTO): Promise<Group> {
     return this.groupService.updateGroup(id, body)
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteGroup(@Param('id') id: string): Promise<void> {
+  deleteGroup(@Param() { id }: MongoIdParams): Promise<void> {
     return this.groupService.deleteGroup(id)
   }
 
   @Post(':id/members')
-  addGroupMembers(@Param('id') id: string, @Body() body: string[]): Promise<Member[]> {
+  addGroupMembers(@Param() { id }: MongoIdParams, @Body() body: string[]): Promise<Member[]> {
     return this.groupService.addGroupMembers(id, body)
   }
 
   @Delete(':id/members')
   @HttpCode(HttpStatus.NO_CONTENT)
-  removeGroupMembers(@Param('id') id: string, @Body() body: string[]): Promise<void> {
+  removeGroupMembers(@Param() { id }: MongoIdParams, @Body() body: string[]): Promise<void> {
     return this.groupService.removeGroupMembers(id, body)
   }
 }

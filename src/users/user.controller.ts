@@ -1,36 +1,48 @@
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus
+} from '@nestjs/common'
 
-import { UsersService } from './user.service'
+import { UserService } from './user.service'
 import { User } from './interfaces/user.interface'
 import { CreateUserDTO } from './dto/create-user.dto'
 import { UpdateUserDTO } from './dto/update-user.dto'
+import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   create(@Body() createUserDTO: CreateUserDTO): Promise<User> {
-    return this.usersService.createUser(createUserDTO)
+    return this.userService.createUser(createUserDTO)
   }
 
   @Get()
   findAll(): Promise<User[]> {
-    return this.usersService.getAllUsers()
+    return this.userService.getAllUsers()
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<User> {
-    return this.usersService.getUser(id)
+  findOne(@Param() { id }: MongoIdParams): Promise<User> {
+    return this.userService.getUser(id)
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateUserDTO: UpdateUserDTO): Promise<void> {
-    return this.usersService.updateUser(id, updateUserDTO)
+  update(@Param() { id }: MongoIdParams, @Body() updateUserDTO: UpdateUserDTO): Promise<User> {
+    return this.userService.updateUser(id, updateUserDTO)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
-    return this.usersService.deleteUser(id)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param() { id }: MongoIdParams): Promise<void> {
+    return this.userService.deleteUser(id)
   }
 }
