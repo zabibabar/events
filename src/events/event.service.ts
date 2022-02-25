@@ -44,6 +44,10 @@ export class EventService {
     if (result.n === 0) throw new NotFoundException('Event not found')
   }
 
+  async getEventAttendees(eventID: string): Promise<Attendee[]> {
+    return (await this.getEvent(eventID)).attendees
+  }
+
   async addEventAttendees(eventID: string, attendees: Attendee[]): Promise<Attendee[]> {
     const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventID },

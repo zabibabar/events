@@ -37,14 +37,19 @@ export class EventsController {
   }
 
   @Patch(':id')
-  async updateEvent(@Param() { id }: MongoIdParams, @Body() body: UpdateEventDTO): Promise<Event> {
+  updateEvent(@Param() { id }: MongoIdParams, @Body() body: UpdateEventDTO): Promise<Event> {
     return this.eventService.updateEvent(id, body)
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteEvent(@Param() { id }: MongoIdParams): Promise<void> {
+  deleteEvent(@Param() { id }: MongoIdParams): Promise<void> {
     return this.eventService.deleteEvent(id)
+  }
+
+  @Get(':id/attendees')
+  getEventAttendees(@Param() { id }: MongoIdParams): Promise<Attendee[]> {
+    return this.eventService.getEventAttendees(id)
   }
 
   @Post(':id/attendees')
