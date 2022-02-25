@@ -34,7 +34,7 @@ export class GroupService {
     return this.convertGroupDocumentToGroup(await newGroup.save())
   }
 
-  async getGroup(groupID: string): Promise<Group> {
+  getGroup(groupID: string): Promise<Group> {
     return this.findGroup(groupID)
   }
 
@@ -52,6 +52,10 @@ export class GroupService {
   async deleteGroup(groupID: string): Promise<void> {
     const result = await this.GroupModel.deleteOne({ _id: groupID }).exec()
     if (result.n === 0) throw new NotFoundException('Group not found')
+  }
+
+  async getGroupMembers(groupID: string): Promise<Member[]> {
+    return (await this.getGroup(groupID)).members
   }
 
   async addGroupMembers(groupID: string, members: string[]): Promise<Member[]> {

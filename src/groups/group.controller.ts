@@ -47,6 +47,11 @@ export class GroupController {
     return this.groupService.deleteGroup(id)
   }
 
+  @Get(':id/members')
+  getGroupMembers(@Param() { id }: MongoIdParams): Promise<Member[]> {
+    return this.groupService.getGroupMembers(id)
+  }
+
   @Post(':id/members')
   addGroupMembers(@Param() { id }: MongoIdParams, @Body() body: string[]): Promise<Member[]> {
     return this.groupService.addGroupMembers(id, body)
