@@ -15,34 +15,46 @@ import { User } from './interfaces/user.interface'
 import { CreateUserDTO } from './dto/create-user.dto'
 import { UpdateUserDTO } from './dto/update-user.dto'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
+import { Group } from 'src/groups/interfaces/group.interface'
+import { Event } from 'src/events/interfaces/event.interface'
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDTO: CreateUserDTO): Promise<User> {
-    return this.userService.createUser(createUserDTO)
-  }
-
   @Get()
-  findAll(): Promise<User[]> {
+  findAllUsers(): Promise<User[]> {
     return this.userService.getAllUsers()
   }
 
+  @Post()
+  createUser(@Body() createUserDTO: CreateUserDTO): Promise<User> {
+    return this.userService.createUser(createUserDTO)
+  }
+
   @Get(':id')
-  findOne(@Param() { id }: MongoIdParams): Promise<User> {
+  findOneUser(@Param() { id }: MongoIdParams): Promise<User> {
     return this.userService.getUser(id)
   }
 
   @Patch(':id')
-  update(@Param() { id }: MongoIdParams, @Body() updateUserDTO: UpdateUserDTO): Promise<User> {
+  updateUser(@Param() { id }: MongoIdParams, @Body() updateUserDTO: UpdateUserDTO): Promise<User> {
     return this.userService.updateUser(id, updateUserDTO)
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param() { id }: MongoIdParams): Promise<void> {
+  deleteUser(@Param() { id }: MongoIdParams): Promise<void> {
     return this.userService.deleteUser(id)
+  }
+
+  @Get(':id/groups')
+  getGroupsByUser(@Param() { id }: MongoIdParams): Promise<Group[]> {
+    return this.userService.getGroupsByUser(id)
+  }
+
+  @Get(':id/events')
+  getEventsByUser(@Param() { id }: MongoIdParams): Promise<Event[]> {
+    return this.userService.getEventsByUser(id)
   }
 }

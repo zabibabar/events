@@ -6,10 +6,18 @@ import { UserDocument, USER_COLLECTION_NAME } from './schemas/user.schema'
 import { User } from './interfaces/user.interface'
 import { CreateUserDTO } from './dto/create-user.dto'
 import { UpdateUserDTO } from './dto/update-user.dto'
+import { GroupDocument, GROUP_COLLECTION_NAME } from 'src/groups/schemas/group.schema'
+import { Group } from 'src/groups/interfaces/group.interface'
+import { Event } from 'src/events/interfaces/event.interface'
+import { EventDocument, EVENT_COLLECTION_NAME } from 'src/events/schemas/event.schema'
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(USER_COLLECTION_NAME) private readonly UserModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(USER_COLLECTION_NAME) private readonly UserModel: Model<UserDocument>,
+    @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>,
+    @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>
+  ) {}
 
   async getAllUsers(): Promise<User[]> {
     const users = await this.UserModel.find().exec()
@@ -40,21 +48,35 @@ export class UserService {
     if (result.n === 0) throw new NotFoundException('User not found')
   }
 
+  async getGroupsByUser(userId: string): Promise<Group[]> {
+    const groups = await this.GroupModel.find({
+      members: { $elemMatch: { member: userId } }
+    }).exec()
+
+    return groups.map((group) => group.toJSON())
+  }
+
+  async getEventsByUser(userId: string): Promise<Event[]> {
+    const events = await this.EventModel.find({
+      attendees: { $elemMatch: { attendee: userId } }
+    }).exec()
+
+    return events.map((event) => event.toJSON())
+  }
+
   private async findUser(userID: string): Promise<User> {
-    let user: UserDocument | null = null
+    let userDoc: UserDocument | null = null
     try {
-      user = await this.UserModel.findById(userID).exec()
+      userDoc = await this.UserModel.findById(userID).exec()
     } catch {
       throw new NotFoundException('User not found')
     } finally {
-      return this.convertUserDocumentToUser(user)
+      return this.convertUserDocumentToUser(userDoc)
     }
   }
 
   private convertUserDocumentToUser(userDoc: UserDocument | null): User {
-    if (!userDoc) {
-      throw new NotFoundException('User not found')
-    }
+    if (!userDoc) throw new NotFoundException('User not found')
 
     const { id, firstName, lastName, email } = userDoc
     return { id, firstName, lastName, email }

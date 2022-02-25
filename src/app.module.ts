@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import { MongooseModule } from '@nestjs/mongoose'
+import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose'
 
 import { AuthModule } from './auth/auth.module'
 import { EventsModule } from './events/event.module'
@@ -12,11 +12,9 @@ import { UsersModule } from './users/user.module'
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        return {
-          uri: config.get<string>('MONGODB_URI')
-        }
-      }
+      useFactory: (config: ConfigService): MongooseModuleOptions => ({
+        uri: config.get<string>('MONGODB_URI')
+      })
     }),
     EventsModule,
     GroupModule,

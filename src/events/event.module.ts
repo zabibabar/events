@@ -8,6 +8,7 @@ import { EventService } from './event.service'
 @Module({
   imports: [MongooseModule.forFeature([{ name: EVENT_COLLECTION_NAME, schema: EventSchema }])],
   controllers: [EventsController],
-  providers: [EventService]
+  providers: [EventService],
+  exports: [MongooseModule]
 })
 export class EventsModule {}
