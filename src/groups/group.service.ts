@@ -91,6 +91,7 @@ export class GroupService {
       throw new NotFoundException('Group not found')
     }
 
-    return groupDoc.toJSON()
+    const { id, name, description, members } = groupDoc
+    return { id, name, description, members }
   }
 }
