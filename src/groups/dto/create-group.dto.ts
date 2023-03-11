@@ -1,34 +1,20 @@
-import {
-  IsArray,
-  IsBoolean,
-  IsMongoId,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  ValidateNested
-} from 'class-validator'
-import { Type } from 'class-transformer'
+import { IsBoolean, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { Group } from '../interfaces/group.interface'
 
-export class CreateGroupDTO {
+export class CreateGroupDTO implements Omit<Omit<Group, 'id'>, 'members'> {
   @IsString()
   @IsNotEmpty()
   name: string
 
   @IsString()
-  @IsNotEmpty()
-  description?: string
-
-  @ValidateNested({ each: true })
-  @Type(() => MemberDTO)
-  @IsArray()
   @IsOptional()
-  members?: MemberDTO[]
+  description?: string
 }
 
 export class MemberDTO {
   @IsString()
   @IsMongoId()
-  member: string
+  id: string
 
   @IsOptional()
   @IsBoolean()

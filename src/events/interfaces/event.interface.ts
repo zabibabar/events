@@ -9,6 +9,5 @@ export interface Event {
   description?: string
   attendees: Attendee[]
   address: string
-  isRemote?: boolean
   hasPot?: boolean
 }

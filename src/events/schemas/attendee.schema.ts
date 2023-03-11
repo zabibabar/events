@@ -3,7 +3,7 @@ import { USER_COLLECTION_NAME } from 'src/users/schemas/user.schema'
 
 export const AttendeeSchema = new Schema(
   {
-    attendee: {
+    id: {
       type: Schema.Types.ObjectId,
       ref: USER_COLLECTION_NAME,
       required: true,
@@ -22,7 +22,7 @@ export const AttendeeSchema = new Schema(
 )
 
 export interface AttendeeDocument extends Document {
-  attendee: string
+  id: string
   going: boolean
   isOrganizer: boolean
   lastUpdated: Date

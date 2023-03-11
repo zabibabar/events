@@ -2,18 +2,28 @@ import { Schema, Document } from 'mongoose'
 
 export const UserSchema = new Schema(
   {
+    name: { type: String, required: true },
+    externalId: { type: String, required: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    email: { type: String, required: true, unique: true }
+    email: { type: String, required: true, unique: true },
+    picture: { type: String, required: true },
+    locale: { type: String, required: true },
+    emailVerified: { type: Boolean, required: true }
   },
   { timestamps: true }
 )
 
 export interface UserDocument extends Document {
   id: string
+  externalId: string
+  name: string
   firstName: string
   lastName: string
   email: string
+  picture: string
+  locale: string
+  emailVerified: boolean
 }
 
 export const USER_COLLECTION_NAME = 'User'

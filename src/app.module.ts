@@ -5,7 +5,7 @@ import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose'
 import { AuthModule } from './auth/auth.module'
 import { EventsModule } from './events/event.module'
 import { GroupModule } from './groups/group.module'
-import { UsersModule } from './users/user.module'
+import { UserModule } from './users/user.module'
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { UsersModule } from './users/user.module'
     }),
     EventsModule,
     GroupModule,
-    UsersModule,
+    UserModule,
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true

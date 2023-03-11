@@ -9,8 +9,9 @@ import {
   ValidateNested
 } from 'class-validator'
 import { Type } from 'class-transformer'
+import { Event } from '../interfaces/event.interface'
 
-export class CreateEventDTO {
+export class CreateEventDTO implements Omit<Event, 'id'> {
   @IsString()
   @IsNotEmpty()
   name: string
@@ -42,16 +43,13 @@ export class CreateEventDTO {
   address: string
 
   @IsBoolean()
-  isRemote: boolean
-
-  @IsBoolean()
   hasPot: boolean
 }
 
 export class AttendeeDTO {
   @IsString()
   @IsMongoId()
-  attendee: string
+  id: string
 
   @IsBoolean()
   going: boolean

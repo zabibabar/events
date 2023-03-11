@@ -1,5 +1,5 @@
 export interface Attendee {
-  attendee: string
+  id: string
   going: boolean
   isOrganizer: boolean
 }

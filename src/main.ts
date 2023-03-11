@@ -11,6 +11,7 @@ async function bootstrap() {
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })
   )
   app.useGlobalGuards(new (AuthGuard('jwt'))())
+  app.setGlobalPrefix('api')
 
   await app.listen(9000)
 }

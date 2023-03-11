@@ -13,7 +13,6 @@ export const EventSchema = new Schema(
     description: String,
     attendees: [AttendeeSchema],
     address: { type: String, required: true },
-    isRemote: { type: Boolean, default: false },
     hasPot: { type: Boolean, default: false }
   },
   { timestamps: true }
@@ -28,7 +27,6 @@ export interface EventDocument extends Document {
   description: string
   attendees: Attendee[]
   address: string
-  isRemote: boolean
   hasPot: boolean
 }
 

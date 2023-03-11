@@ -10,6 +10,8 @@ import {
   Post
 } from '@nestjs/common'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
+import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
+import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.pipe'
 import { CreateGroupDTO } from './dto/create-group.dto'
 import { UpdateGroupDTO } from './dto/update-group.dto'
 
@@ -22,13 +24,16 @@ export class GroupController {
   constructor(private groupService: GroupService) {}
 
   @Get()
-  getGroups(): Promise<Group[]> {
-    return this.groupService.getGroups()
+  getGroups(@UserExternalId(UserIdByExternalIdPipe) userId: string): Promise<Group[]> {
+    return this.groupService.getGroups(userId)
   }
 
   @Post()
-  async createGroup(@Body() body: CreateGroupDTO): Promise<Group> {
-    return this.groupService.createGroup(body)
+  async createGroup(
+    @Body() body: CreateGroupDTO,
+    @UserExternalId(UserIdByExternalIdPipe) userId: string
+  ): Promise<Group> {
+    return this.groupService.createGroup(body, userId)
   }
 
   @Get(':id')
@@ -57,9 +62,11 @@ export class GroupController {
     return this.groupService.addGroupMembers(id, body)
   }
 
-  @Delete(':id/members')
+  @Delete(':id/members/:memberId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  removeGroupMembers(@Param() { id }: MongoIdParams, @Body() body: string[]): Promise<void> {
-    return this.groupService.removeGroupMembers(id, body)
+  removeGroupMember(
+    @Param() { id, memberId }: MongoIdParams & { memberId: string }
+  ): Promise<void> {
+    return this.groupService.removeGroupMember(id, memberId)
   }
 }

@@ -3,7 +3,7 @@ import { USER_COLLECTION_NAME } from 'src/users/schemas/user.schema'
 
 export const MemberSchema = new Schema(
   {
-    member: {
+    id: {
       type: Schema.Types.ObjectId,
       ref: USER_COLLECTION_NAME,
       required: true,
@@ -18,6 +18,6 @@ export const MemberSchema = new Schema(
 )
 
 export interface MemberDocument extends Document {
-  member: string
+  id: string
   muted: boolean
 }

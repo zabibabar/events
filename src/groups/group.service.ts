@@ -14,34 +14,27 @@ export class GroupService {
     @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>
   ) {}
 
-  async getGroups(): Promise<Group[]> {
-    const group = await this.GroupModel.find()
-      .populate({
-        path: 'members.member',
-        model: 'User'
-      })
-      .exec()
-    return group.map(({ id, name, description, members }) => ({
-      id,
-      name,
-      description,
-      members
-    }))
+  async getGroups(userId: string): Promise<Group[]> {
+    const groups = await this.GroupModel.find({
+      members: { $elemMatch: { id: userId } }
+    }).exec()
+
+    return groups.map((group) => group.toJSON())
   }
 
-  async createGroup({ name, description, members }: CreateGroupDTO): Promise<Group> {
-    const newGroup = new this.GroupModel({ name, description, members })
+  async createGroup(group: CreateGroupDTO, userId: string): Promise<Group> {
+    const newGroup = new this.GroupModel({ ...group, members: [{ id: userId }] })
     return this.convertGroupDocumentToGroup(await newGroup.save())
   }
 
-  getGroup(groupID: string): Promise<Group> {
-    return this.findGroup(groupID)
+  getGroup(groupId: string): Promise<Group> {
+    return this.findGroup(groupId)
   }
 
-  async updateGroup(groupID: string, groupFields: UpdateGroupDTO): Promise<Group> {
+  async updateGroup(groupId: string, groupFields: UpdateGroupDTO): Promise<Group> {
     // TODO: delete groupFields.members
     const groupDocument = await this.GroupModel.findOneAndUpdate(
-      { _id: groupID },
+      { _id: groupId },
       { $set: groupFields },
       { new: true }
     ).exec()
@@ -49,36 +42,36 @@ export class GroupService {
     return this.convertGroupDocumentToGroup(groupDocument)
   }
 
-  async deleteGroup(groupID: string): Promise<void> {
-    const result = await this.GroupModel.deleteOne({ _id: groupID }).exec()
+  async deleteGroup(groupId: string): Promise<void> {
+    const result = await this.GroupModel.deleteOne({ _id: groupId }).exec()
     if (result.n === 0) throw new NotFoundException('Group not found')
   }
 
-  async getGroupMembers(groupID: string): Promise<Member[]> {
-    return (await this.getGroup(groupID)).members
+  async getGroupMembers(groupId: string): Promise<Member[]> {
+    return (await this.getGroup(groupId)).members
   }
 
-  async addGroupMembers(groupID: string, members: string[]): Promise<Member[]> {
+  async addGroupMembers(groupId: string, memberIds: string[]): Promise<Member[]> {
     const groupDocument = await this.GroupModel.findOneAndUpdate(
-      { _id: groupID },
-      { $addToSet: { members: { $each: members.map((member) => ({ member })) } } },
+      { _id: groupId },
+      { $addToSet: { members: { $each: memberIds.map((id) => ({ id })) } } },
       { new: true }
     ).exec()
 
     return this.convertGroupDocumentToGroup(groupDocument).members
   }
 
-  async removeGroupMembers(groupID: string, members: string[]): Promise<void> {
+  async removeGroupMember(groupId: string, memberId: string): Promise<void> {
     await this.GroupModel.updateOne(
-      { _id: groupID },
-      { $pull: { members: { member: { $in: members } } } }
+      { _id: groupId },
+      { $pull: { members: { id: memberId } } }
     ).exec()
   }
 
-  private async findGroup(groupID: string): Promise<Group> {
+  private async findGroup(groupId: string): Promise<Group> {
     let group: GroupDocument | null = null
     try {
-      group = await this.GroupModel.findById(groupID).exec()
+      group = await this.GroupModel.findById(groupId).exec()
     } catch {
       throw new NotFoundException('Group not found')
     } finally {
