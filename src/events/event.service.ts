@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
@@ -7,20 +7,32 @@ import { Event } from './interfaces/event.interface'
 import { Attendee } from './interfaces/attendee.interface'
 import { UpdateEventDTO } from './dto/update-event.dto'
 import { CreateEventDTO } from './dto/create-event.dto'
+import { GroupService } from 'src/groups/group.service'
 
 @Injectable()
 export class EventService {
   constructor(
-    @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>
+    @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>,
+    private groupService: GroupService
   ) {}
 
-  async getEvents(): Promise<Event[]> {
-    const events = await this.EventModel.find().exec()
+  async getEvents(userId: string): Promise<Event[]> {
+    const events = await this.EventModel.find({
+      attendees: { $elemMatch: { id: userId } }
+    }).exec()
+
     return events.map((event) => this.convertEventDocumentToEvent(event))
   }
 
-  async createEvent(body: CreateEventDTO): Promise<Event> {
-    const newEvent = new this.EventModel(body)
+  async createEvent(body: CreateEventDTO, userId: string): Promise<Event> {
+    const isUserGroupMember = await this.groupService.isGroupMember(body.groupId, userId)
+    if (!isUserGroupMember)
+      throw new BadRequestException('User is not eligible to create an event in the group')
+
+    const newEvent = new this.EventModel({
+      ...body,
+      attendees: [{ id: userId, going: true, isOrganizer: true }]
+    })
     return this.convertEventDocumentToEvent(await newEvent.save())
   }
 
@@ -48,10 +60,10 @@ export class EventService {
     return (await this.getEvent(eventId)).attendees
   }
 
-  async addEventAttendees(eventId: string, attendees: Attendee[]): Promise<Attendee[]> {
+  async addEventAttendee(eventId: string, attendee: Attendee): Promise<Attendee[]> {
     const eventDoc = await this.EventModel.findOneAndUpdate(
-      { _id: eventId },
-      { $addToSet: { attendees: { $each: attendees } } },
+      { _id: eventId, 'attendees.id': { $ne: attendee.id } },
+      { $push: attendee },
       { new: true }
     ).exec()
 
@@ -81,27 +93,16 @@ export class EventService {
       throw new NotFoundException('Event not found')
     }
 
-    const {
-      id,
-      group,
-      name,
-      timeStart,
-      timeEnd,
-      description,
-      attendees,
-      address,
-      hasPot
-    } = eventDoc
+    const { id, groupId, name, timeStart, timeEnd, description, attendees, address } = eventDoc
     return {
       id,
-      group,
+      groupId,
       name,
       timeStart,
       timeEnd,
       description,
       attendees,
-      address,
-      hasPot
+      address
     }
   }
 }

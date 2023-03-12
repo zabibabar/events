@@ -19,7 +19,7 @@ export class GroupService {
       members: { $elemMatch: { id: userId } }
     }).exec()
 
-    return groups.map((group) => group.toJSON())
+    return groups.map((group) => this.convertGroupDocumentToGroup(group))
   }
 
   async createGroup(group: CreateGroupDTO, userId: string): Promise<Group> {
@@ -66,6 +66,11 @@ export class GroupService {
       { _id: groupId },
       { $pull: { members: { id: memberId } } }
     ).exec()
+  }
+
+  async isGroupMember(groupId: string, memberId: string): Promise<boolean> {
+    const groupMembers = await this.getGroupMembers(groupId)
+    return groupMembers.some(({ id }) => id.toString() === memberId)
   }
 
   private async findGroup(groupId: string): Promise<Group> {

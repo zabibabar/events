@@ -10,6 +10,8 @@ import {
   Post
 } from '@nestjs/common'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
+import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
+import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.pipe'
 import { AttendeeDTO, CreateEventDTO } from './dto/create-event.dto'
 import { UpdateEventDTO } from './dto/update-event.dto'
 
@@ -22,13 +24,16 @@ export class EventsController {
   constructor(private eventService: EventService) {}
 
   @Get()
-  getEvents(): Promise<Event[]> {
-    return this.eventService.getEvents()
+  getEvents(@UserExternalId(UserIdByExternalIdPipe) userId: string): Promise<Event[]> {
+    return this.eventService.getEvents(userId)
   }
 
   @Post()
-  createEvent(@Body() body: CreateEventDTO): Promise<Event> {
-    return this.eventService.createEvent(body)
+  createEvent(
+    @Body() body: CreateEventDTO,
+    @UserExternalId(UserIdByExternalIdPipe) userId: string
+  ): Promise<Event> {
+    return this.eventService.createEvent(body, userId)
   }
 
   @Get(':id')
@@ -53,11 +58,8 @@ export class EventsController {
   }
 
   @Post(':id/attendees')
-  addEventAttendees(
-    @Param() { id }: MongoIdParams,
-    @Body() body: AttendeeDTO[]
-  ): Promise<Attendee[]> {
-    return this.eventService.addEventAttendees(id, body)
+  addEventAttendee(@Param() { id }: MongoIdParams, @Body() body: AttendeeDTO): Promise<Attendee[]> {
+    return this.eventService.addEventAttendee(id, body)
   }
 
   @Delete(':id/attendees')

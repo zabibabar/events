@@ -13,6 +13,6 @@ import { UserModule } from 'src/users/user.module'
   ],
   controllers: [GroupController],
   providers: [GroupService],
-  exports: [MongooseModule]
+  exports: [MongooseModule, GroupService]
 })
 export class GroupModule {}
