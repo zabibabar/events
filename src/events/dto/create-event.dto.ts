@@ -18,7 +18,7 @@ export class CreateEventDTO implements Omit<Event, 'id'> {
 
   @IsString()
   @IsMongoId()
-  group: string
+  groupId: string
 
   @IsDate()
   @Type(() => Date)
@@ -41,9 +41,6 @@ export class CreateEventDTO implements Omit<Event, 'id'> {
   @IsString()
   @IsNotEmpty()
   address: string
-
-  @IsBoolean()
-  hasPot: boolean
 }
 
 export class AttendeeDTO {
