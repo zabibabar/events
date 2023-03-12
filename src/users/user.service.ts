@@ -35,22 +35,6 @@ export class UserService {
     if (result.n === 0) throw new NotFoundException('User not found')
   }
 
-  // async getGroupsByUser(userId: string): Promise<Group[]> {
-  //   const groups = await this.GroupModel.find({
-  //     members: { $elemMatch: { member: userId } }
-  //   }).exec()
-
-  //   return groups.map((group) => group.toJSON())
-  // }
-
-  // async getEventsByUser(userId: string): Promise<Event[]> {
-  //   const events = await this.EventModel.find({
-  //     attendees: { $elemMatch: { attendee: userId } }
-  //   }).exec()
-
-  //   return events.map((event) => event.toJSON())
-  // }
-
   private async findUser(externalId: string): Promise<User> {
     let userDoc: UserDocument | null = null
     try {
