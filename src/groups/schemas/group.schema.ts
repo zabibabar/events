@@ -7,7 +7,8 @@ export const GroupSchema = new Schema(
   {
     name: { type: String, required: true },
     description: String,
-    members: [MemberSchema]
+    inviteCode: Schema.Types.ObjectId,
+    members: { type: [MemberSchema], default: [] }
   },
   { timestamps: true }
 )
@@ -15,7 +16,8 @@ export const GroupSchema = new Schema(
 export interface GroupDocument extends Document {
   id: string
   name: string
-  description: string
+  inviteCode: string
+  description?: string
   members: Member[]
 }
 

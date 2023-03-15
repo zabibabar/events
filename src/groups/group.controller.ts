@@ -7,7 +7,8 @@ import {
   HttpStatus,
   Param,
   Patch,
-  Post
+  Post,
+  Query
 } from '@nestjs/common'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
@@ -52,13 +53,22 @@ export class GroupController {
     return this.groupService.deleteGroup(id)
   }
 
+  @Post('/join')
+  addToGroupViaInviteCode(
+    @Query('inviteCode') inviteCode: string,
+    @UserExternalId(UserIdByExternalIdPipe) userId: string
+  ): Promise<Group> {
+    console.log(inviteCode, userId)
+    return this.groupService.addToGroupViaInviteCode(inviteCode, userId)
+  }
+
   @Get(':id/members')
   getGroupMembers(@Param() { id }: MongoIdParams): Promise<Member[]> {
     return this.groupService.getGroupMembers(id)
   }
 
   @Post(':id/members')
-  addGroupMembers(@Param() { id }: MongoIdParams, @Body() body: string[]): Promise<Member[]> {
+  addGroupMembers(@Param() { id }: MongoIdParams, @Body() body: string): Promise<Member[]> {
     return this.groupService.addGroupMembers(id, body)
   }
 

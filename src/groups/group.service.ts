@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 
 import { GroupDocument, GROUP_COLLECTION_NAME } from './schemas/group.schema'
 import { Group } from './interfaces/group.interface'
@@ -23,7 +23,11 @@ export class GroupService {
   }
 
   async createGroup(group: CreateGroupDTO, userId: string): Promise<Group> {
-    const newGroup = new this.GroupModel({ ...group, members: [{ id: userId }] })
+    const newGroup = new this.GroupModel({
+      ...group,
+      inviteCode: new Types.ObjectId(),
+      members: [{ id: userId }]
+    })
     return this.convertGroupDocumentToGroup(await newGroup.save())
   }
 
@@ -51,26 +55,36 @@ export class GroupService {
     return (await this.getGroup(groupId)).members
   }
 
-  async addGroupMembers(groupId: string, memberIds: string[]): Promise<Member[]> {
+  async addToGroupViaInviteCode(inviteCode: string, userId: string): Promise<Group> {
     const groupDocument = await this.GroupModel.findOneAndUpdate(
-      { _id: groupId },
-      { $addToSet: { members: { $each: memberIds.map((id) => ({ id })) } } },
+      { inviteCode, 'members.id': { $ne: userId } },
+      { $push: { members: { id: userId } } },
+      { new: true }
+    ).exec()
+
+    return this.convertGroupDocumentToGroup(groupDocument)
+  }
+
+  async addGroupMembers(groupId: string, userId: string): Promise<Member[]> {
+    const groupDocument = await this.GroupModel.findOneAndUpdate(
+      { _id: groupId, 'members.id': { $ne: userId } },
+      { $push: { members: { id: userId } } },
       { new: true }
     ).exec()
 
     return this.convertGroupDocumentToGroup(groupDocument).members
   }
 
-  async removeGroupMember(groupId: string, memberId: string): Promise<void> {
-    await this.GroupModel.updateOne(
+  removeGroupMember(groupId: string, userId: string): Promise<void> {
+    return this.GroupModel.updateOne(
       { _id: groupId },
-      { $pull: { members: { id: memberId } } }
+      { $pull: { members: { id: userId } } }
     ).exec()
   }
 
-  async isGroupMember(groupId: string, memberId: string): Promise<boolean> {
+  async isGroupMember(groupId: string, userId: string): Promise<boolean> {
     const groupMembers = await this.getGroupMembers(groupId)
-    return groupMembers.some(({ id }) => id.toString() === memberId)
+    return groupMembers.some(({ id }) => id.toString() === userId)
   }
 
   private async findGroup(groupId: string): Promise<Group> {
@@ -89,7 +103,7 @@ export class GroupService {
       throw new NotFoundException('Group not found')
     }
 
-    const { id, name, description, members } = groupDoc
-    return { id, name, description, members }
+    const { id, name, description, members, inviteCode } = groupDoc
+    return { id, name, description, members, inviteCode }
   }
 }

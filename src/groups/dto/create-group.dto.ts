@@ -1,7 +1,7 @@
 import { IsBoolean, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { Group } from '../interfaces/group.interface'
 
-export class CreateGroupDTO implements Omit<Omit<Group, 'id'>, 'members'> {
+export class CreateGroupDTO implements Omit<Omit<Omit<Group, 'id'>, 'members'>, 'inviteCode'> {
   @IsString()
   @IsNotEmpty()
   name: string
