@@ -7,7 +7,8 @@ import {
   HttpStatus,
   Param,
   Patch,
-  Post
+  Post,
+  Query
 } from '@nestjs/common'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
@@ -28,17 +29,22 @@ export class EventsController {
     return this.eventService.getEvents(userId)
   }
 
+  @Get()
+  getEventsByGroupId(@Query('groupId') groupId: string): Promise<Event[]> {
+    return this.eventService.getEventsByGroupId(groupId)
+  }
+
+  @Get(':id')
+  getEvent(@Param() { id }: MongoIdParams): Promise<Event> {
+    return this.eventService.getEvent(id)
+  }
+
   @Post()
   createEvent(
     @Body() body: CreateEventDTO,
     @UserExternalId(UserIdByExternalIdPipe) userId: string
   ): Promise<Event> {
     return this.eventService.createEvent(body, userId)
-  }
-
-  @Get(':id')
-  getEvent(@Param() { id }: MongoIdParams): Promise<Event> {
-    return this.eventService.getEvent(id)
   }
 
   @Patch(':id')

@@ -24,6 +24,16 @@ export class EventService {
     return events.map((event) => this.convertEventDocumentToEvent(event))
   }
 
+  async getEventsByGroupId(groupId: string): Promise<Event[]> {
+    const events = await this.EventModel.find({ groupId }).exec()
+
+    return events.map((event) => this.convertEventDocumentToEvent(event))
+  }
+
+  getEvent(eventId: string): Promise<Event> {
+    return this.findEvent(eventId)
+  }
+
   async createEvent(body: CreateEventDTO, userId: string): Promise<Event> {
     const isUserGroupMember = await this.groupService.isGroupMember(body.groupId, userId)
     if (!isUserGroupMember)
@@ -34,10 +44,6 @@ export class EventService {
       attendees: [{ id: userId, going: true, isOrganizer: true }]
     })
     return this.convertEventDocumentToEvent(await newEvent.save())
-  }
-
-  getEvent(eventId: string): Promise<Event> {
-    return this.findEvent(eventId)
   }
 
   async updateEvent(eventId: string, eventFields: UpdateEventDTO): Promise<Event> {
