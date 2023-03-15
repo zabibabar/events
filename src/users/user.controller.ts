@@ -25,9 +25,14 @@ export class UserController {
     return this.userService.createUser(createUserDTO)
   }
 
-  @Get(':id')
+  @Get('external/:id')
   getUserByExternalId(@Param() { id }): Promise<User> {
     return this.userService.getUserByExternalId(id)
+  }
+
+  @Get(':id')
+  getUser(@Param() { id }: MongoIdParams): Promise<User> {
+    return this.userService.getUserById(id)
   }
 
   @Patch(':id')

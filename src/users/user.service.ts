@@ -16,8 +16,12 @@ export class UserService {
     return this.convertUserDocumentToUser(await newUser.save())
   }
 
+  getUserById(userId: string): Promise<User> {
+    return this.findUser(userId)
+  }
+
   getUserByExternalId(externalId: string): Promise<User> {
-    return this.findUser(externalId)
+    return this.findUser(externalId, true)
   }
 
   async updateUser(userId: string, userFields: UpdateUserDTO): Promise<User> {
@@ -35,10 +39,11 @@ export class UserService {
     if (result.n === 0) throw new NotFoundException('User not found')
   }
 
-  private async findUser(externalId: string): Promise<User> {
+  private async findUser(id: string, externalId = false): Promise<User> {
     let userDoc: UserDocument | null = null
     try {
-      ;[userDoc] = await this.UserModel.find({ externalId }).exec()
+      if (externalId) [userDoc] = await this.UserModel.find({ externalId: id }).exec()
+      else userDoc = await this.UserModel.findById(id).exec()
     } catch {
       throw new NotFoundException('User not found')
     } finally {
