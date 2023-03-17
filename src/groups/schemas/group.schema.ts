@@ -7,7 +7,7 @@ export const GroupSchema = new Schema(
   {
     name: { type: String, required: true },
     description: String,
-    inviteCode: Schema.Types.ObjectId,
+    inviteCode: String,
     members: { type: [MemberSchema], default: [] }
   },
   { timestamps: true }

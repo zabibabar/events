@@ -58,7 +58,6 @@ export class GroupController {
     @Query('inviteCode') inviteCode: string,
     @UserExternalId(UserIdByExternalIdPipe) userId: string
   ): Promise<Group> {
-    console.log(inviteCode, userId)
     return this.groupService.addToGroupViaInviteCode(inviteCode, userId)
   }
 
