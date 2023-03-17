@@ -3,12 +3,12 @@ import { Schema, Document } from 'mongoose'
 export const UserSchema = new Schema(
   {
     name: { type: String, required: true },
-    externalId: { type: String, required: true },
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    externalId: { type: String, required: true, unique: true },
+    firstName: { type: String },
+    lastName: { type: String },
     email: { type: String, required: true, unique: true },
-    picture: { type: String, required: true },
-    locale: { type: String, required: true },
+    picture: { type: String },
+    locale: { type: String },
     emailVerified: { type: Boolean, required: true }
   },
   { timestamps: true }

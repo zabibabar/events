@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator'
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { User } from '../interfaces/user.interface'
 
 export class CreateUserDTO implements Omit<User, 'id'> {
@@ -10,10 +10,12 @@ export class CreateUserDTO implements Omit<User, 'id'> {
   @IsNotEmpty()
   name: string
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   firstName: string
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   lastName: string
@@ -21,10 +23,12 @@ export class CreateUserDTO implements Omit<User, 'id'> {
   @IsEmail()
   email: string
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   picture: string
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   locale: string
