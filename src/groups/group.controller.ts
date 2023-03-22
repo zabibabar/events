@@ -8,8 +8,11 @@ import {
   Param,
   Patch,
   Post,
-  Query
+  Query,
+  UploadedFile,
+  UseInterceptors
 } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
 import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.pipe'
@@ -30,7 +33,7 @@ export class GroupController {
   }
 
   @Post()
-  async createGroup(
+  createGroup(
     @Body() body: CreateGroupDTO,
     @UserExternalId(UserIdByExternalIdPipe) userId: string
   ): Promise<Group> {
@@ -38,8 +41,8 @@ export class GroupController {
   }
 
   @Get(':id')
-  async getGroup(@Param() { id }: MongoIdParams): Promise<Group> {
-    return await this.groupService.getGroup(id)
+  getGroup(@Param() { id }: MongoIdParams): Promise<Group> {
+    return this.groupService.getGroup(id)
   }
 
   @Patch(':id')
@@ -51,6 +54,15 @@ export class GroupController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteGroup(@Param() { id }: MongoIdParams): Promise<void> {
     return this.groupService.deleteGroup(id)
+  }
+
+  @Post(':id/uploadPicture')
+  @UseInterceptors(FileInterceptor('group_picture'))
+  uploadGroupPicture(
+    @Param() { id }: MongoIdParams,
+    @UploadedFile() file: Express.Multer.File
+  ): Promise<string> {
+    return this.groupService.uploadGroupPicture(id, file)
   }
 
   @Post('/join')

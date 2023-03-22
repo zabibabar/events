@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 
@@ -6,12 +6,13 @@ import { GroupDocument, GROUP_COLLECTION_NAME } from './schemas/group.schema'
 import { Group } from './interfaces/group.interface'
 import { Member } from './interfaces/member.interface'
 import { CreateGroupDTO } from './dto/create-group.dto'
-import { UpdateGroupDTO } from './dto/update-group.dto'
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 
 @Injectable()
 export class GroupService {
   constructor(
-    @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>
+    @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>,
+    private cloudinary: CloudinaryService
   ) {}
 
   async getGroups(userId: string): Promise<Group[]> {
@@ -35,8 +36,8 @@ export class GroupService {
     return this.findGroup(groupId)
   }
 
-  async updateGroup(groupId: string, groupFields: UpdateGroupDTO): Promise<Group> {
-    // TODO: delete groupFields.members
+  async updateGroup(groupId: string, groupFields: Partial<Group>): Promise<Group> {
+    delete groupFields.members
     const groupDocument = await this.GroupModel.findOneAndUpdate(
       { _id: groupId },
       { $set: groupFields },
@@ -55,11 +56,16 @@ export class GroupService {
     return (await this.getGroup(groupId)).members
   }
 
-  async addToGroupViaInviteCode(inviteCode: string, userId: string): Promise<Group> {
-    console.log(inviteCode.toString())
-    const test = await this.GroupModel.find({ inviteCode })
-    console.log(test)
+  async uploadGroupPicture(groupId: string, file: Express.Multer.File): Promise<string> {
+    try {
+      const { secure_url } = await this.cloudinary.uploadImage(file, { folder: 'Groups' })
+      return (await this.updateGroup(groupId, { picture: secure_url })).picture
+    } catch (err) {
+      throw new BadRequestException('Invalid file type.')
+    }
+  }
 
+  async addToGroupViaInviteCode(inviteCode: string, userId: string): Promise<Group> {
     const groupDocument = await this.GroupModel.findOneAndUpdate(
       { inviteCode, 'members.id': { $ne: userId } },
       { $push: { members: { id: userId } } },
@@ -107,7 +113,7 @@ export class GroupService {
       throw new NotFoundException('Group not found')
     }
 
-    const { id, name, description, members, inviteCode } = groupDoc
-    return { id, name, description, members, inviteCode }
+    const { id, name, picture, description, members, inviteCode } = groupDoc
+    return { id, name, picture, description, members, inviteCode }
   }
 }
