@@ -58,7 +58,11 @@ export class GroupService {
 
   async uploadGroupPicture(groupId: string, file: Express.Multer.File): Promise<string> {
     try {
-      const { secure_url } = await this.cloudinary.uploadImage(file, { folder: 'Groups' })
+      const { secure_url } = await this.cloudinary.uploadImage(file, {
+        folder: `groups/${groupId}`,
+        public_id: 'thumbnail',
+        overwrite: true
+      })
       return (await this.updateGroup(groupId, { picture: secure_url })).picture
     } catch (err) {
       throw new BadRequestException('Invalid file type.')
