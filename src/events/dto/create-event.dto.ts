@@ -11,7 +11,7 @@ import {
 import { Type } from 'class-transformer'
 import { Event } from '../interfaces/event.interface'
 
-export class CreateEventDTO implements Omit<Event, 'id'> {
+export class CreateEventDTO implements Omit<Event, 'id' | 'picture'> {
   @IsString()
   @IsNotEmpty()
   name: string

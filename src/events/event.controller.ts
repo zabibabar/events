@@ -8,8 +8,11 @@ import {
   Param,
   Patch,
   Post,
-  Query
+  Query,
+  UploadedFile,
+  UseInterceptors
 } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
 import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.pipe'
@@ -56,6 +59,15 @@ export class EventsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteEvent(@Param() { id }: MongoIdParams): Promise<void> {
     return this.eventService.deleteEvent(id)
+  }
+
+  @Post(':id/uploadPicture')
+  @UseInterceptors(FileInterceptor('event_picture'))
+  uploadGroupPicture(
+    @Param() { id }: MongoIdParams,
+    @UploadedFile() file: Express.Multer.File
+  ): Promise<string> {
+    return this.eventService.uploadEventPicture(id, file)
   }
 
   @Get(':id/attendees')

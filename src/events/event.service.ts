@@ -5,15 +5,16 @@ import { Model } from 'mongoose'
 import { EventDocument, EVENT_COLLECTION_NAME } from './schemas/event.schema'
 import { Event } from './interfaces/event.interface'
 import { Attendee } from './interfaces/attendee.interface'
-import { UpdateEventDTO } from './dto/update-event.dto'
 import { CreateEventDTO } from './dto/create-event.dto'
 import { GroupService } from 'src/groups/group.service'
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>,
-    private groupService: GroupService
+    private groupService: GroupService,
+    private cloudinary: CloudinaryService
   ) {}
 
   async getEvents(userId: string): Promise<Event[]> {
@@ -46,7 +47,7 @@ export class EventService {
     return this.convertEventDocumentToEvent(await newEvent.save())
   }
 
-  async updateEvent(eventId: string, eventFields: UpdateEventDTO): Promise<Event> {
+  async updateEvent(eventId: string, eventFields: Partial<Event>): Promise<Event> {
     delete eventFields.attendees
     const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventId },
@@ -83,6 +84,19 @@ export class EventService {
     ).exec()
   }
 
+  async uploadEventPicture(eventsId: string, file: Express.Multer.File): Promise<string> {
+    try {
+      const { secure_url } = await this.cloudinary.uploadImage(file, {
+        folder: `events/${eventsId}`,
+        public_id: 'thumbnail',
+        overwrite: true
+      })
+      return (await this.updateEvent(eventsId, { picture: secure_url })).picture
+    } catch (err) {
+      throw new BadRequestException('Invalid file type.')
+    }
+  }
+
   private async findEvent(eventId: string): Promise<Event> {
     let event: EventDocument | null = null
     try {
@@ -99,11 +113,22 @@ export class EventService {
       throw new NotFoundException('Event not found')
     }
 
-    const { id, groupId, name, timeStart, timeEnd, description, attendees, address } = eventDoc
+    const {
+      id,
+      groupId,
+      name,
+      picture,
+      timeStart,
+      timeEnd,
+      description,
+      attendees,
+      address
+    } = eventDoc
     return {
       id,
       groupId,
       name,
+      picture,
       timeStart,
       timeEnd,
       description,
