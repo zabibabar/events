@@ -8,6 +8,7 @@ import { Attendee } from './interfaces/attendee.interface'
 import { CreateEventDTO } from './dto/create-event.dto'
 import { GroupService } from 'src/groups/group.service'
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
+import { UpdateAttendeeDTO } from './dto/update-attendee-dto'
 
 @Injectable()
 export class EventService {
@@ -67,6 +68,25 @@ export class EventService {
     return (await this.getEvent(eventId)).attendees
   }
 
+  async updateEventAttendee(
+    eventId: string,
+    attendeeId: string,
+    updates: UpdateAttendeeDTO
+  ): Promise<Attendee[]> {
+    const attendees = await this.getEventAttendees(eventId)
+    const isAttendeeNew = attendees.some(({ id }) => id === attendeeId)
+
+    if (isAttendeeNew) return this.addEventAttendee(eventId, { ...updates, id: attendeeId })
+
+    const eventDoc = await this.EventModel.findOneAndUpdate(
+      { _id: eventId, 'attendees.id': attendeeId },
+      { $set: { 'attendees.$.isGoing': updates.isGoing } },
+      { new: true }
+    ).exec()
+
+    return this.convertEventDocumentToEvent(eventDoc).attendees
+  }
+
   async addEventAttendee(eventId: string, attendee: Attendee): Promise<Attendee[]> {
     const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventId, 'attendees.id': { $ne: attendee.id } },
@@ -75,13 +95,6 @@ export class EventService {
     ).exec()
 
     return this.convertEventDocumentToEvent(eventDoc).attendees
-  }
-
-  async removeEventAttendees(eventId: string, attendeeIds: string[]): Promise<void> {
-    await this.EventModel.updateOne(
-      { _id: eventId },
-      { $pull: { attendees: { id: { $in: attendeeIds } } } }
-    ).exec()
   }
 
   async uploadEventPicture(eventsId: string, file: Express.Multer.File): Promise<string> {

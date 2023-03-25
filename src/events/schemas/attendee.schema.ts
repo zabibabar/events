@@ -9,21 +9,12 @@ export const AttendeeSchema = new Schema(
       required: true,
       unique: true
     },
-    going: {
-      type: Boolean,
-      default: false
-    },
-    isOrganizer: {
-      type: Boolean,
-      default: false
-    }
+    isGoing: Boolean
   },
   { timestamps: { createdAt: true }, _id: false }
 )
 
 export interface AttendeeDocument extends Document {
   id: string
-  going: boolean
-  isOrganizer: boolean
-  lastUpdated: Date
+  isGoing: boolean
 }

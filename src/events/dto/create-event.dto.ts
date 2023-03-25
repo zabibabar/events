@@ -1,17 +1,8 @@
-import {
-  IsArray,
-  IsBoolean,
-  IsDate,
-  IsMongoId,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  ValidateNested
-} from 'class-validator'
+import { IsBoolean, IsDate, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { Type } from 'class-transformer'
 import { Event } from '../interfaces/event.interface'
 
-export class CreateEventDTO implements Omit<Event, 'id' | 'picture'> {
+export class CreateEventDTO implements Omit<Event, 'id' | 'picture' | 'attendees'> {
   @IsString()
   @IsNotEmpty()
   name: string
@@ -32,25 +23,7 @@ export class CreateEventDTO implements Omit<Event, 'id' | 'picture'> {
   @IsOptional()
   description?: string
 
-  @IsArray()
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => AttendeeDTO)
-  attendees: AttendeeDTO[] = []
-
   @IsString()
   @IsNotEmpty()
   address: string
-}
-
-export class AttendeeDTO {
-  @IsString()
-  @IsMongoId()
-  id: string
-
-  @IsBoolean()
-  going: boolean
-
-  @IsBoolean()
-  isOrganizer: boolean
 }

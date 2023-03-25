@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UploadedFile,
   UseInterceptors
@@ -16,7 +17,8 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
 import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.pipe'
-import { AttendeeDTO, CreateEventDTO } from './dto/create-event.dto'
+import { CreateEventDTO } from './dto/create-event.dto'
+import { UpdateAttendeeDTO } from './dto/update-attendee-dto'
 import { UpdateEventDTO } from './dto/update-event.dto'
 
 import { EventService } from './event.service'
@@ -75,14 +77,12 @@ export class EventsController {
     return this.eventService.getEventAttendees(id)
   }
 
-  @Post(':id/attendees')
-  addEventAttendee(@Param() { id }: MongoIdParams, @Body() body: AttendeeDTO): Promise<Attendee[]> {
-    return this.eventService.addEventAttendee(id, body)
-  }
-
-  @Delete(':id/attendees')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  removeEventAttendees(@Param() { id }: MongoIdParams, @Body() body: string[]): Promise<void> {
-    return this.eventService.removeEventAttendees(id, body)
+  @Put(':id/attendees')
+  updateEventAttendee(
+    @Param() { id }: MongoIdParams,
+    @UserExternalId(UserIdByExternalIdPipe) userId: string,
+    @Body() body: UpdateAttendeeDTO
+  ): Promise<Attendee[]> {
+    return this.eventService.updateEventAttendee(id, userId, body)
   }
 }
