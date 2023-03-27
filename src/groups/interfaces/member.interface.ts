@@ -1,4 +1,4 @@
 export interface Member {
   id: string
-  muted?: boolean
+  isOrganizer: boolean
 }

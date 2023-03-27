@@ -9,7 +9,7 @@ export const MemberSchema = new Schema(
       required: true,
       unique: true
     },
-    muted: {
+    isOrganizer: {
       type: Boolean,
       default: false
     }
@@ -19,5 +19,5 @@ export const MemberSchema = new Schema(
 
 export interface MemberDocument extends Document {
   id: string
-  muted: boolean
+  isOrganizer: boolean
 }

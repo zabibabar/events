@@ -27,7 +27,7 @@ export class GroupService {
     const newGroup = new this.GroupModel({
       ...group,
       inviteCode: new Types.ObjectId().toHexString(),
-      members: [{ id: userId }]
+      members: [{ id: userId, isOrganizer: true }]
     })
     return this.convertGroupDocumentToGroup(await newGroup.save())
   }
@@ -72,7 +72,7 @@ export class GroupService {
   async addToGroupViaInviteCode(inviteCode: string, userId: string): Promise<Group> {
     const groupDocument = await this.GroupModel.findOneAndUpdate(
       { inviteCode, 'members.id': { $ne: userId } },
-      { $push: { members: { id: userId } } },
+      { $push: { members: { id: userId, isOrganizer: false } } },
       { new: true }
     ).exec()
 
@@ -82,7 +82,7 @@ export class GroupService {
   async addGroupMembers(groupId: string, userId: string): Promise<Member[]> {
     const groupDocument = await this.GroupModel.findOneAndUpdate(
       { _id: groupId, 'members.id': { $ne: userId } },
-      { $push: { members: { id: userId } } },
+      { $push: { members: { id: userId, isOrganizer: false } } },
       { new: true }
     ).exec()
 
