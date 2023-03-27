@@ -1,19 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
 import { UserDocument, USER_COLLECTION_NAME } from './schemas/user.schema'
 import { User } from './interfaces/user.interface'
 import { CreateUserDTO } from './dto/create-user.dto'
-import { UpdateUserDTO } from './dto/update-user.dto'
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(USER_COLLECTION_NAME) private readonly UserModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(USER_COLLECTION_NAME) private readonly UserModel: Model<UserDocument>,
+    private cloudinary: CloudinaryService
+  ) {}
 
-  async createUser(user: CreateUserDTO): Promise<User> {
-    const newUser = new this.UserModel(user)
-    return this.convertUserDocumentToUser(await newUser.save())
+  async createUser({ picture, ...user }: CreateUserDTO): Promise<User> {
+    const userDoc = new this.UserModel(user)
+    const newUser = this.convertUserDocumentToUser(await userDoc.save())
+
+    if (!picture) return newUser
+
+    const profilePic = await this.uploadUserPicture(newUser.id, picture)
+    return this.updateUser(newUser.id, { picture: profilePic })
   }
 
   getUserById(userId: string): Promise<User> {
@@ -24,7 +32,7 @@ export class UserService {
     return this.findUser(externalId, true)
   }
 
-  async updateUser(userId: string, userFields: UpdateUserDTO): Promise<User> {
+  async updateUser(userId: string, userFields: Partial<User>): Promise<User> {
     const userDoc = await this.UserModel.findOneAndUpdate(
       { _id: userId },
       { $set: userFields },
@@ -37,6 +45,19 @@ export class UserService {
   async deleteUser(userId: string): Promise<void> {
     const result = await this.UserModel.deleteOne({ _id: userId }).exec()
     if (result.n === 0) throw new NotFoundException('User not found')
+  }
+
+  async uploadUserPicture(userId: string, file: Express.Multer.File | string): Promise<string> {
+    try {
+      const { secure_url } = await this.cloudinary.uploadImage(file, {
+        folder: `users/${userId}`,
+        public_id: 'profile',
+        overwrite: true
+      })
+      return (await this.updateUser(userId, { picture: secure_url })).picture
+    } catch (err) {
+      throw new BadRequestException('Invalid file type.')
+    }
   }
 
   private async findUser(id: string, externalId = false): Promise<User> {
