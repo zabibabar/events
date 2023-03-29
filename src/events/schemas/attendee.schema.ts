@@ -11,8 +11,15 @@ export const AttendeeSchema = new Schema(
     },
     isGoing: Boolean
   },
-  { timestamps: { createdAt: true }, _id: false }
+  { timestamps: { createdAt: true, updatedAt: false }, _id: false, toJSON: { virtuals: true } }
 )
+
+AttendeeSchema.virtual('user', {
+  ref: USER_COLLECTION_NAME,
+  localField: 'id',
+  foreignField: '_id',
+  justOne: true
+})
 
 export interface AttendeeDocument extends Document {
   id: string

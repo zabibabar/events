@@ -32,8 +32,21 @@ export class GroupService {
     return this.convertGroupDocumentToGroup(await newGroup.save())
   }
 
-  getGroup(groupId: string): Promise<Group> {
-    return this.findGroup(groupId)
+  async getGroup(groupId: string): Promise<Group> {
+    let groupDoc: GroupDocument | null = null
+    try {
+      groupDoc = await this.GroupModel.findById(groupId)
+        .populate({
+          path: 'members.user',
+          select: 'name picture -_id'
+        })
+        .exec()
+    } catch {
+      throw new NotFoundException('Group not found')
+    } finally {
+      if (!groupDoc) throw new NotFoundException('Group not found')
+      return this.convertGroupDocumentToGroup(groupDoc)
+    }
   }
 
   async updateGroup(groupId: string, groupFields: Partial<Group>): Promise<Group> {
@@ -99,17 +112,6 @@ export class GroupService {
   async isGroupMember(groupId: string, userId: string): Promise<boolean> {
     const groupMembers = await this.getGroupMembers(groupId)
     return groupMembers.some(({ id }) => id.toString() === userId)
-  }
-
-  private async findGroup(groupId: string): Promise<Group> {
-    let group: GroupDocument | null = null
-    try {
-      group = await this.GroupModel.findById(groupId).exec()
-    } catch {
-      throw new NotFoundException('Group not found')
-    } finally {
-      return this.convertGroupDocumentToGroup(group)
-    }
   }
 
   private convertGroupDocumentToGroup(groupDoc: GroupDocument | null): Group {

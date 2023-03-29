@@ -2,8 +2,8 @@ import { Schema, Document } from 'mongoose'
 
 export const UserSchema = new Schema(
   {
-    name: { type: String, required: true },
     externalId: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
     firstName: { type: String },
     lastName: { type: String },
     email: { type: String, required: true, unique: true },

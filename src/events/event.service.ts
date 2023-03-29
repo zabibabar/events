@@ -32,8 +32,21 @@ export class EventService {
     return events.map((event) => this.convertEventDocumentToEvent(event))
   }
 
-  getEvent(eventId: string): Promise<Event> {
-    return this.findEvent(eventId)
+  async getEvent(eventId: string): Promise<Event> {
+    let eventDoc: EventDocument | null = null
+    try {
+      eventDoc = await this.EventModel.findById(eventId)
+        .populate({
+          path: 'attendees.user',
+          select: 'name picture -_id'
+        })
+        .exec()
+    } catch {
+      throw new NotFoundException('Event not found')
+    } finally {
+      if (!eventDoc) throw new NotFoundException('Event not found')
+      return this.convertEventDocumentToEvent(eventDoc)
+    }
   }
 
   async createEvent(body: CreateEventDTO, userId: string): Promise<Event> {
