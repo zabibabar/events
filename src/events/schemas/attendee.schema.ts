@@ -1,7 +1,8 @@
-import { Schema, Document } from 'mongoose'
+import { Schema, HydratedDocument } from 'mongoose'
 import { USER_COLLECTION_NAME } from 'src/users/schemas/user.schema'
+import { Attendee } from '../interfaces/attendee.interface'
 
-export const AttendeeSchema = new Schema(
+export const AttendeeSchema = new Schema<Attendee>(
   {
     id: {
       type: Schema.Types.ObjectId,
@@ -11,7 +12,7 @@ export const AttendeeSchema = new Schema(
     },
     isGoing: Boolean
   },
-  { timestamps: { createdAt: true, updatedAt: false }, _id: false, toJSON: { virtuals: true } }
+  { timestamps: true, _id: false, toJSON: { virtuals: true } }
 )
 
 AttendeeSchema.virtual('user', {
@@ -21,7 +22,4 @@ AttendeeSchema.virtual('user', {
   justOne: true
 })
 
-export interface AttendeeDocument extends Document {
-  id: string
-  isGoing: boolean
-}
+export type AttendeeDocument = HydratedDocument<Attendee>

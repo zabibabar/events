@@ -26,7 +26,7 @@ export class GroupService {
   async createGroup(group: CreateGroupDTO, userId: string): Promise<Group> {
     const newGroup = new this.GroupModel({
       ...group,
-      inviteCode: new Types.ObjectId().toHexString(),
+      inviteCode: new Types.ObjectId().toString(),
       members: [{ id: userId, isOrganizer: true }]
     })
     return this.convertGroupDocumentToGroup(await newGroup.save())
@@ -38,7 +38,7 @@ export class GroupService {
       groupDoc = await this.GroupModel.findById(groupId)
         .populate({
           path: 'members.user',
-          select: 'name picture -_id'
+          select: 'name picture'
         })
         .exec()
     } catch {
@@ -62,7 +62,7 @@ export class GroupService {
 
   async deleteGroup(groupId: string): Promise<void> {
     const result = await this.GroupModel.deleteOne({ _id: groupId }).exec()
-    if (result.n === 0) throw new NotFoundException('Group not found')
+    if (result.deletedCount === 0) throw new NotFoundException('Group not found')
   }
 
   async getGroupMembers(groupId: string): Promise<Member[]> {
@@ -102,24 +102,20 @@ export class GroupService {
     return this.convertGroupDocumentToGroup(groupDocument).members
   }
 
-  removeGroupMember(groupId: string, userId: string): Promise<void> {
-    return this.GroupModel.updateOne(
-      { _id: groupId },
-      { $pull: { members: { id: userId } } }
-    ).exec()
+  async removeGroupMember(groupId: string, userId: string): Promise<void> {
+    await this.GroupModel.updateOne({ _id: groupId }, { $pull: { members: { id: userId } } }).exec()
+    return
   }
 
   async isGroupMember(groupId: string, userId: string): Promise<boolean> {
     const groupMembers = await this.getGroupMembers(groupId)
-    return groupMembers.some(({ id }) => id.toString() === userId)
+    return groupMembers.some(({ id }) => id.equals(userId))
   }
 
   private convertGroupDocumentToGroup(groupDoc: GroupDocument | null): Group {
     if (!groupDoc) {
       throw new NotFoundException('Group not found')
     }
-
-    const { id, name, picture, description, members, inviteCode } = groupDoc
-    return { id, name, picture, description, members, inviteCode }
+    return groupDoc.toJSON()
   }
 }

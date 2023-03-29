@@ -14,6 +14,7 @@ import {
   UseInterceptors
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { Types } from 'mongoose'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
 import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.pipe'

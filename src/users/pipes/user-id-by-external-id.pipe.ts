@@ -1,4 +1,5 @@
 import { PipeTransform, Injectable } from '@nestjs/common'
+import { Types } from 'mongoose'
 import { UserService } from '../user.service'
 
 @Injectable()
@@ -7,6 +8,6 @@ export class UserIdByExternalIdPipe implements PipeTransform<string, Promise<str
 
   async transform(externalId: string): Promise<string> {
     const user = await this.userService.getUserByExternalId(externalId)
-    return user.id
+    return user.id.toString()
   }
 }

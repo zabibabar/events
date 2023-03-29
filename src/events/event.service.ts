@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 
 import { EventDocument, EVENT_COLLECTION_NAME } from './schemas/event.schema'
 import { Event } from './interfaces/event.interface'
@@ -9,6 +9,7 @@ import { CreateEventDTO } from './dto/create-event.dto'
 import { GroupService } from 'src/groups/group.service'
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 import { UpdateAttendeeDTO } from './dto/update-attendee-dto'
+import { UpdateEventDTO } from './dto/update-event.dto'
 
 @Injectable()
 export class EventService {
@@ -38,7 +39,7 @@ export class EventService {
       eventDoc = await this.EventModel.findById(eventId)
         .populate({
           path: 'attendees.user',
-          select: 'name picture -_id'
+          select: 'name picture'
         })
         .exec()
     } catch {
@@ -61,8 +62,10 @@ export class EventService {
     return this.convertEventDocumentToEvent(await newEvent.save())
   }
 
-  async updateEvent(eventId: string, eventFields: Partial<Event>): Promise<Event> {
-    delete eventFields.attendees
+  async updateEvent(
+    eventId: string,
+    eventFields: UpdateEventDTO & { picture?: string }
+  ): Promise<Event> {
     const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventId },
       { $set: eventFields },
@@ -74,7 +77,7 @@ export class EventService {
 
   async deleteEvent(eventId: string): Promise<void> {
     const result = await this.EventModel.deleteOne({ _id: eventId }).exec()
-    if (result.n === 0) throw new NotFoundException('Event not found')
+    if (result.deletedCount === 0) throw new NotFoundException('Event not found')
   }
 
   async getEventAttendees(eventId: string): Promise<Attendee[]> {
@@ -87,9 +90,9 @@ export class EventService {
     updates: UpdateAttendeeDTO
   ): Promise<Attendee[]> {
     const attendees = await this.getEventAttendees(eventId)
-    const isAttendeeNew = attendees.some(({ id }) => id === attendeeId)
+    const isAttendeeNew = attendees.some(({ id }) => id.equals(attendeeId))
 
-    if (isAttendeeNew) return this.addEventAttendee(eventId, { ...updates, id: attendeeId })
+    if (isAttendeeNew) return this.addEventAttendee(eventId, attendeeId, updates)
 
     const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventId, 'attendees.id': attendeeId },
@@ -100,10 +103,14 @@ export class EventService {
     return this.convertEventDocumentToEvent(eventDoc).attendees
   }
 
-  async addEventAttendee(eventId: string, attendee: Attendee): Promise<Attendee[]> {
+  async addEventAttendee(
+    eventId: string,
+    attendeeId: string,
+    updates: UpdateAttendeeDTO
+  ): Promise<Attendee[]> {
     const eventDoc = await this.EventModel.findOneAndUpdate(
-      { _id: eventId, 'attendees.id': { $ne: attendee.id } },
-      { $push: attendee },
+      { _id: eventId, 'attendees.id': { $ne: attendeeId } },
+      { $push: { ...updates, id: attendeeId } },
       { new: true }
     ).exec()
 
@@ -123,43 +130,11 @@ export class EventService {
     }
   }
 
-  private async findEvent(eventId: string): Promise<Event> {
-    let event: EventDocument | null = null
-    try {
-      event = await this.EventModel.findById(eventId).exec()
-    } catch {
-      throw new NotFoundException('Event not found')
-    } finally {
-      return this.convertEventDocumentToEvent(event)
-    }
-  }
-
   private convertEventDocumentToEvent(eventDoc: EventDocument | null): Event {
     if (!eventDoc) {
       throw new NotFoundException('Event not found')
     }
 
-    const {
-      id,
-      groupId,
-      name,
-      picture,
-      timeStart,
-      timeEnd,
-      description,
-      attendees,
-      address
-    } = eventDoc
-    return {
-      id,
-      groupId,
-      name,
-      picture,
-      timeStart,
-      timeEnd,
-      description,
-      attendees,
-      address
-    }
+    return eventDoc.toJSON()
   }
 }

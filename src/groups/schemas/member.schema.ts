@@ -1,7 +1,8 @@
-import { Schema, Document } from 'mongoose'
+import { Schema, HydratedDocument } from 'mongoose'
 import { USER_COLLECTION_NAME } from 'src/users/schemas/user.schema'
+import { Member } from '../interfaces/member.interface'
 
-export const MemberSchema = new Schema(
+export const MemberSchema = new Schema<Member>(
   {
     id: {
       type: Schema.Types.ObjectId,
@@ -23,7 +24,4 @@ MemberSchema.virtual('user', {
   justOne: true
 })
 
-export interface MemberDocument extends Document {
-  id: string
-  isOrganizer: boolean
-}
+export type MemberDocument = HydratedDocument<Member>

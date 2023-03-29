@@ -1,7 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
-import { Group } from '../interfaces/group.interface'
 
-export class CreateGroupDTO implements Omit<Group, 'id' | 'picture' | 'members' | 'inviteCode'> {
+export class CreateGroupDTO {
   @IsString()
   @IsNotEmpty()
   name: string

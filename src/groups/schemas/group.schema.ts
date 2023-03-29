@@ -1,9 +1,9 @@
-import { Schema, Document } from 'mongoose'
+import { Schema, HydratedDocument } from 'mongoose'
 
 import { MemberSchema } from './member.schema'
-import { Member } from '../interfaces/member.interface'
+import { Group } from '../interfaces/group.interface'
 
-export const GroupSchema = new Schema(
+export const GroupSchema = new Schema<Group>(
   {
     name: { type: String, required: true },
     description: String,
@@ -11,16 +11,19 @@ export const GroupSchema = new Schema(
     inviteCode: String,
     members: { type: [MemberSchema], default: [] }
   },
-  { timestamps: true }
+  {
+    timestamps: false,
+    toJSON: {
+      virtuals: true,
+      transform: (_, ret) => {
+        delete ret.__v
+        delete ret._id
+        return ret
+      }
+    }
+  }
 )
 
-export interface GroupDocument extends Document {
-  id: string
-  name: string
-  description?: string
-  picture: string
-  inviteCode: string
-  members: Member[]
-}
+export type GroupDocument = HydratedDocument<Group>
 
 export const GROUP_COLLECTION_NAME = 'Group'

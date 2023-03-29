@@ -1,8 +1,7 @@
-import { IsBoolean, IsDate, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { IsDate, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { Type } from 'class-transformer'
-import { Event } from '../interfaces/event.interface'
 
-export class CreateEventDTO implements Omit<Event, 'id' | 'picture' | 'attendees'> {
+export class CreateEventDTO {
   @IsString()
   @IsNotEmpty()
   name: string

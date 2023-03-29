@@ -1,7 +1,6 @@
 import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator'
-import { User } from '../interfaces/user.interface'
 
-export class CreateUserDTO implements Omit<User, 'id'> {
+export class CreateUserDTO {
   @IsString()
   @IsNotEmpty()
   externalId: string

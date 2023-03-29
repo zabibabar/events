@@ -1,8 +1,9 @@
+import { Types } from 'mongoose'
 import { Attendee } from './attendee.interface'
 
 export interface Event {
   id: string
-  groupId: string
+  groupId: Types.ObjectId
   name: string
   picture: string
   timeStart: Date

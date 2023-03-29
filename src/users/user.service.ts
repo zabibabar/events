@@ -20,8 +20,8 @@ export class UserService {
 
     if (!picture) return newUser
 
-    const profilePic = await this.uploadUserPicture(newUser.id, picture)
-    return this.updateUser(newUser.id, { picture: profilePic })
+    const profilePic = await this.uploadUserPicture(newUser.id.toString(), picture)
+    return this.updateUser(newUser.id.toString(), { picture: profilePic })
   }
 
   getUserById(userId: string): Promise<User> {
@@ -44,7 +44,7 @@ export class UserService {
 
   async deleteUser(userId: string): Promise<void> {
     const result = await this.UserModel.deleteOne({ _id: userId }).exec()
-    if (result.n === 0) throw new NotFoundException('User not found')
+    if (result.deletedCount === 0) throw new NotFoundException('User not found')
   }
 
   async uploadUserPicture(userId: string, file: Express.Multer.File | string): Promise<string> {
@@ -74,18 +74,6 @@ export class UserService {
 
   private convertUserDocumentToUser(userDoc: UserDocument | null): User {
     if (!userDoc) throw new NotFoundException('User not found')
-
-    const {
-      id,
-      externalId,
-      firstName,
-      lastName,
-      email,
-      locale,
-      emailVerified,
-      name,
-      picture
-    } = userDoc
-    return { id, externalId, firstName, lastName, email, locale, emailVerified, name, picture }
+    return userDoc.toJSON()
   }
 }

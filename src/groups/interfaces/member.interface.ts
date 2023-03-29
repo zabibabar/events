@@ -1,4 +1,6 @@
+import { Types } from 'mongoose'
+
 export interface Member {
-  id: string
+  id: Types.ObjectId
   isOrganizer: boolean
 }

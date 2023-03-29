@@ -1,5 +1,7 @@
+import { Types } from 'mongoose'
+
 export interface User {
-  id: string
+  id: Types.ObjectId
   externalId: string
   name: string
   firstName: string
