@@ -14,11 +14,11 @@ import {
   UseInterceptors
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { Types } from 'mongoose'
 import { MongoIdParams } from 'src/shared/dto/mongo-id-params.dto'
 import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
 import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.pipe'
 import { CreateEventDTO } from './dto/create-event.dto'
+import { EventQueryParamDTO } from './dto/event-query-param.dto'
 import { UpdateAttendeeDTO } from './dto/update-attendee-dto'
 import { UpdateEventDTO } from './dto/update-event.dto'
 
@@ -30,14 +30,14 @@ import { Event } from './interfaces/event.interface'
 export class EventsController {
   constructor(private eventService: EventService) {}
 
-  @Get()
-  getEvents(@UserExternalId(UserIdByExternalIdPipe) userId: string): Promise<Event[]> {
-    return this.eventService.getEvents(userId)
-  }
+  // @Get()
+  // getEventsByUserId(@UserExternalId(UserIdByExternalIdPipe) userId: string): Promise<Event[]> {
+  //   return this.eventService.getEventsByUserId(userId)
+  // }
 
   @Get()
-  getEventsByGroupId(@Query('groupId') groupId: string): Promise<Event[]> {
-    return this.eventService.getEventsByGroupId(groupId)
+  getEventsByGroupId(@Query() query: EventQueryParamDTO): Promise<Event[]> {
+    return this.eventService.getEventsByGroupId(query.groupId, query)
   }
 
   @Get(':id')

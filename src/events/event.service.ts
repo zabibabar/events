@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, Types } from 'mongoose'
+import { Model } from 'mongoose'
 
 import { EventDocument, EVENT_COLLECTION_NAME } from './schemas/event.schema'
 import { Event } from './interfaces/event.interface'
@@ -10,6 +10,7 @@ import { GroupService } from 'src/groups/group.service'
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 import { UpdateAttendeeDTO } from './dto/update-attendee-dto'
 import { UpdateEventDTO } from './dto/update-event.dto'
+import { EventQueryParamDTO } from './dto/event-query-param.dto'
 
 @Injectable()
 export class EventService {
@@ -19,16 +20,65 @@ export class EventService {
     private cloudinary: CloudinaryService
   ) {}
 
-  async getEvents(userId: string): Promise<Event[]> {
+  async getEventsByGroupId(groupId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
+    const { skip, pastLimit, upcomingLimit, currentDate } = filterOptions
+    const events: Event[] = []
+
+    if (pastLimit) events.push(...(await this.getPastEvents(groupId, pastLimit, skip, currentDate)))
+    if (upcomingLimit)
+      events.push(...(await this.getUpcomingEvents(groupId, upcomingLimit, skip, currentDate)))
+
+    return events
+  }
+
+  private async getUpcomingEvents(
+    groupId: string,
+    limit: number,
+    skip = 0,
+    currentDate: Date
+  ): Promise<Event[]> {
+    const upcomingEvents = await this.EventModel.find({
+      groupId,
+      timeStart: { $gte: currentDate }
+    })
+      .sort({ timeStart: 1 })
+      .limit(limit)
+      .skip(skip)
+      .populate({
+        path: 'attendees.user',
+        select: 'name picture'
+      })
+      .exec()
+
+    return upcomingEvents.map((event) => this.convertEventDocumentToEvent(event))
+  }
+
+  private async getPastEvents(
+    groupId: string,
+    limit = 10,
+    skip = 0,
+    currentDate: Date
+  ): Promise<Event[]> {
+    const pastEvent = await this.EventModel.find({
+      groupId,
+      timeEnd: { $lt: currentDate }
+    })
+      .sort({ timeStart: -1 })
+      .limit(limit)
+      .skip(skip)
+      .populate({
+        path: 'attendees.user',
+        select: 'name picture'
+      })
+      .exec()
+
+    return pastEvent.map((event) => this.convertEventDocumentToEvent(event))
+  }
+
+  async getEventsByUserId(userId: string): Promise<Event[]> {
     const events = await this.EventModel.find({
       attendees: { $elemMatch: { id: userId } }
     }).exec()
-
-    return events.map((event) => this.convertEventDocumentToEvent(event))
-  }
-
-  async getEventsByGroupId(groupId: string): Promise<Event[]> {
-    const events = await this.EventModel.find({ groupId }).exec()
 
     return events.map((event) => this.convertEventDocumentToEvent(event))
   }
@@ -90,7 +140,7 @@ export class EventService {
     updates: UpdateAttendeeDTO
   ): Promise<Attendee[]> {
     const attendees = await this.getEventAttendees(eventId)
-    const isAttendeeNew = attendees.some(({ id }) => id.equals(attendeeId))
+    const isAttendeeNew = !attendees.some(({ id }) => id.equals(attendeeId))
 
     if (isAttendeeNew) return this.addEventAttendee(eventId, attendeeId, updates)
 
@@ -98,7 +148,12 @@ export class EventService {
       { _id: eventId, 'attendees.id': attendeeId },
       { $set: { 'attendees.$.isGoing': updates.isGoing } },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'attendees.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.convertEventDocumentToEvent(eventDoc).attendees
   }
@@ -112,7 +167,12 @@ export class EventService {
       { _id: eventId, 'attendees.id': { $ne: attendeeId } },
       { $push: { ...updates, id: attendeeId } },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'attendees.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.convertEventDocumentToEvent(eventDoc).attendees
   }

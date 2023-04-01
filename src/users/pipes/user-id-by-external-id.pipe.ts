@@ -1,5 +1,4 @@
 import { PipeTransform, Injectable } from '@nestjs/common'
-import { Types } from 'mongoose'
 import { UserService } from '../user.service'
 
 @Injectable()
