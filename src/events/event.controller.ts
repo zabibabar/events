@@ -30,14 +30,12 @@ import { Event } from './interfaces/event.interface'
 export class EventsController {
   constructor(private eventService: EventService) {}
 
-  // @Get()
-  // getEventsByUserId(@UserExternalId(UserIdByExternalIdPipe) userId: string): Promise<Event[]> {
-  //   return this.eventService.getEventsByUserId(userId)
-  // }
-
   @Get()
-  getEventsByGroupId(@Query() query: EventQueryParamDTO): Promise<Event[]> {
-    return this.eventService.getEventsByGroupId(query.groupId, query)
+  getEventsByGroupId(
+    @UserExternalId(UserIdByExternalIdPipe) userId: string,
+    @Query() query: EventQueryParamDTO
+  ): Promise<Event[]> {
+    return this.eventService.getEventsByGroupId(userId, query)
   }
 
   @Get(':id')

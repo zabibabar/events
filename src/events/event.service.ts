@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { FilterQuery, Model } from 'mongoose'
 
 import { EventDocument, EVENT_COLLECTION_NAME } from './schemas/event.schema'
 import { Event } from './interfaces/event.interface'
@@ -20,25 +20,30 @@ export class EventService {
     private cloudinary: CloudinaryService
   ) {}
 
-  async getEventsByGroupId(groupId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
-    const { skip, pastLimit, upcomingLimit, currentDate } = filterOptions
+  async getEventsByGroupId(userId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
+    const { skip, pastLimit, upcomingLimit, currentDate, groupId } = filterOptions
     const events: Event[] = []
+    const filterQuery: FilterQuery<EventDocument> = {}
 
-    if (pastLimit) events.push(...(await this.getPastEvents(groupId, pastLimit, skip, currentDate)))
+    if (groupId) filterQuery.groupId = groupId
+    else filterQuery.attendees = { $elemMatch: { id: userId, isGoing: true } }
+
+    if (pastLimit)
+      events.push(...(await this.getPastEvents(filterQuery, pastLimit, skip, currentDate)))
     if (upcomingLimit)
-      events.push(...(await this.getUpcomingEvents(groupId, upcomingLimit, skip, currentDate)))
+      events.push(...(await this.getUpcomingEvents(filterQuery, upcomingLimit, skip, currentDate)))
 
     return events
   }
 
   private async getUpcomingEvents(
-    groupId: string,
+    filterQuery: FilterQuery<EventDocument>,
     limit: number,
     skip = 0,
     currentDate: Date
   ): Promise<Event[]> {
     const upcomingEvents = await this.EventModel.find({
-      groupId,
+      ...filterQuery,
       timeStart: { $gte: currentDate }
     })
       .sort({ timeStart: 1 })
@@ -54,13 +59,13 @@ export class EventService {
   }
 
   private async getPastEvents(
-    groupId: string,
+    filterQuery: FilterQuery<EventDocument>,
     limit = 10,
     skip = 0,
     currentDate: Date
   ): Promise<Event[]> {
     const pastEvent = await this.EventModel.find({
-      groupId,
+      ...filterQuery,
       timeEnd: { $lt: currentDate }
     })
       .sort({ timeStart: -1 })
@@ -73,14 +78,6 @@ export class EventService {
       .exec()
 
     return pastEvent.map((event) => this.convertEventDocumentToEvent(event))
-  }
-
-  async getEventsByUserId(userId: string): Promise<Event[]> {
-    const events = await this.EventModel.find({
-      attendees: { $elemMatch: { id: userId } }
-    }).exec()
-
-    return events.map((event) => this.convertEventDocumentToEvent(event))
   }
 
   async getEvent(eventId: string): Promise<Event> {

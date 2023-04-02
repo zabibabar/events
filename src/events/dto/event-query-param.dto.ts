@@ -2,6 +2,7 @@ import { Type } from 'class-transformer'
 import { IsInt, IsMongoId, IsOptional, Max, Min } from 'class-validator'
 
 export class EventQueryParamDTO {
+  @IsOptional()
   @IsMongoId()
   groupId: string
 
