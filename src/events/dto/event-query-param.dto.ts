@@ -10,7 +10,7 @@ export class EventQueryParamDTO {
   @IsInt()
   @Type(() => Number)
   @Min(0)
-  skip = 0
+  skip? = 0
 
   @IsOptional()
   @IsInt()

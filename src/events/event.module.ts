@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 
 import { EventsController } from './event.controller'
@@ -12,11 +12,11 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module'
   imports: [
     MongooseModule.forFeature([{ name: EVENT_COLLECTION_NAME, schema: EventSchema }]),
     UserModule,
-    GroupModule,
+    forwardRef(() => GroupModule),
     CloudinaryModule
   ],
   controllers: [EventsController],
   providers: [EventService],
-  exports: [MongooseModule]
+  exports: [MongooseModule, EventService]
 })
 export class EventsModule {}

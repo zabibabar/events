@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 
@@ -7,11 +13,13 @@ import { Group } from './interfaces/group.interface'
 import { Member } from './interfaces/member.interface'
 import { CreateGroupDTO } from './dto/create-group.dto'
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
+import { EventService } from 'src/events/event.service'
 
 @Injectable()
 export class GroupService {
   constructor(
     @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>,
+    @Inject(forwardRef(() => EventService)) private eventService: EventService,
     private cloudinary: CloudinaryService
   ) {}
 
@@ -27,6 +35,7 @@ export class GroupService {
     const newGroup = new this.GroupModel({
       ...group,
       inviteCode: new Types.ObjectId().toString(),
+      picture: 'https://res.cloudinary.com/dmtvchdf2/image/upload/v1680403970/Groups/default.webp',
       members: [{ id: userId, isOrganizer: true }]
     })
     return this.convertGroupDocumentToGroup(await newGroup.save())
@@ -61,12 +70,14 @@ export class GroupService {
   }
 
   async deleteGroup(groupId: string): Promise<void> {
+    const events = await this.eventService.getEventsByGroupId('', {
+      groupId,
+      upcomingLimit: 1,
+      currentDate: new Date()
+    })
+    if (events.length > 0) throw new NotFoundException('Cannot delete group with upcoming events')
     const result = await this.GroupModel.deleteOne({ _id: groupId }).exec()
     if (result.deletedCount === 0) throw new NotFoundException('Group not found')
-  }
-
-  async getGroupMembers(groupId: string): Promise<Member[]> {
-    return (await this.getGroup(groupId)).members
   }
 
   async uploadGroupPicture(groupId: string, file: Express.Multer.File): Promise<string> {
@@ -90,26 +101,6 @@ export class GroupService {
     ).exec()
 
     return this.convertGroupDocumentToGroup(groupDocument)
-  }
-
-  async addGroupMembers(groupId: string, userId: string): Promise<Member[]> {
-    const groupDocument = await this.GroupModel.findOneAndUpdate(
-      { _id: groupId, 'members.id': { $ne: userId } },
-      { $push: { members: { id: userId, isOrganizer: false } } },
-      { new: true }
-    ).exec()
-
-    return this.convertGroupDocumentToGroup(groupDocument).members
-  }
-
-  async removeGroupMember(groupId: string, userId: string): Promise<void> {
-    await this.GroupModel.updateOne({ _id: groupId }, { $pull: { members: { id: userId } } }).exec()
-    return
-  }
-
-  async isGroupMember(groupId: string, userId: string): Promise<boolean> {
-    const groupMembers = await this.getGroupMembers(groupId)
-    return groupMembers.some(({ id }) => id.equals(userId))
   }
 
   private convertGroupDocumentToGroup(groupDoc: GroupDocument | null): Group {

@@ -2,6 +2,11 @@ import { Schema, HydratedDocument } from 'mongoose'
 
 import { MemberSchema } from './member.schema'
 import { Group } from '../interfaces/group.interface'
+import { GroupVirtuals } from '../interfaces/group-virtuals.interface'
+
+export type GroupDocument = HydratedDocument<Group, GroupVirtuals>
+
+export const GROUP_COLLECTION_NAME = 'Group'
 
 export const GroupSchema = new Schema<Group>(
   {
@@ -24,6 +29,10 @@ export const GroupSchema = new Schema<Group>(
   }
 )
 
-export type GroupDocument = HydratedDocument<Group>
+GroupSchema.virtual('membersCount', function (this: GroupDocument) {
+  return this.members.length
+})
 
-export const GROUP_COLLECTION_NAME = 'Group'
+GroupSchema.virtual('organizersCount', function (this: GroupDocument) {
+  return this.members.filter(({ isOrganizer }) => isOrganizer).length
+})

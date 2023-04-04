@@ -11,12 +11,14 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 import { UpdateAttendeeDTO } from './dto/update-attendee-dto'
 import { UpdateEventDTO } from './dto/update-event.dto'
 import { EventQueryParamDTO } from './dto/event-query-param.dto'
+import { GroupMemberService } from 'src/groups/group-member.service'
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>,
     private groupService: GroupService,
+    private groupMemberService: GroupMemberService,
     private cloudinary: CloudinaryService
   ) {}
 
@@ -98,7 +100,7 @@ export class EventService {
   }
 
   async createEvent(body: CreateEventDTO, userId: string): Promise<Event> {
-    const isUserGroupMember = await this.groupService.isGroupMember(body.groupId, userId)
+    const isUserGroupMember = await this.groupMemberService.isGroupMember(body.groupId, userId)
     if (!isUserGroupMember)
       throw new BadRequestException('User is not eligible to create an event in the group')
 

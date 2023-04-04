@@ -3,6 +3,10 @@ import { GROUP_COLLECTION_NAME } from 'src/groups/schemas/group.schema'
 import { Event } from '../interfaces/event.interface'
 
 import { AttendeeSchema } from './attendee.schema'
+import { EventVirtuals } from '../interfaces/event-virtuals.interface'
+
+export type EventDocument = HydratedDocument<Event, EventVirtuals>
+export const EVENT_COLLECTION_NAME = 'Event'
 
 export const EventSchema = new Schema<Event>(
   {
@@ -28,6 +32,10 @@ export const EventSchema = new Schema<Event>(
   }
 )
 
-export type EventDocument = HydratedDocument<Event>
+EventSchema.virtual('attendeesCount', function (this: EventDocument) {
+  return this.attendees.length
+})
 
-export const EVENT_COLLECTION_NAME = 'Event'
+EventSchema.virtual('goingAttendeesCount', function (this: EventDocument) {
+  return this.attendees.filter(({ isGoing }) => isGoing).length
+})

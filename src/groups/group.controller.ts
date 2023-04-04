@@ -22,10 +22,11 @@ import { UpdateGroupDTO } from './dto/update-group.dto'
 import { GroupService } from './group.service'
 import { Group } from './interfaces/group.interface'
 import { Member } from './interfaces/member.interface'
+import { GroupMemberService } from './group-member.service'
 
 @Controller('groups')
 export class GroupController {
-  constructor(private groupService: GroupService) {}
+  constructor(private groupService: GroupService, private groupMemberService: GroupMemberService) {}
 
   @Get()
   getGroups(@UserExternalId(UserIdByExternalIdPipe) userId: string): Promise<Group[]> {
@@ -75,19 +76,23 @@ export class GroupController {
 
   @Get(':id/members')
   getGroupMembers(@Param() { id }: MongoIdParams): Promise<Member[]> {
-    return this.groupService.getGroupMembers(id)
+    return this.groupMemberService.getGroupMembers(id)
   }
 
   @Post(':id/members')
-  addGroupMembers(@Param() { id }: MongoIdParams, @Body() body: string): Promise<Member[]> {
-    return this.groupService.addGroupMembers(id, body)
+  addGroupMember(
+    @Param() { id }: MongoIdParams,
+    @Body() body: { userId: string }
+  ): Promise<Member[]> {
+    return this.groupMemberService.addGroupMember(id, body.userId)
   }
 
   @Delete(':id/members/:memberId')
   @HttpCode(HttpStatus.NO_CONTENT)
   removeGroupMember(
-    @Param() { id, memberId }: MongoIdParams & { memberId: string }
+    @Param() { id, memberId }: MongoIdParams & { memberId: string },
+    @UserExternalId(UserIdByExternalIdPipe) userId: string
   ): Promise<void> {
-    return this.groupService.removeGroupMember(id, memberId)
+    return this.groupMemberService.removeGroupMember(id, memberId, userId)
   }
 }
