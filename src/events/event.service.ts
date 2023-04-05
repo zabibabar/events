@@ -100,8 +100,11 @@ export class EventService {
   }
 
   async createEvent(body: CreateEventDTO, userId: string): Promise<Event> {
-    const isUserGroupMember = await this.groupMemberService.isGroupMember(body.groupId, userId)
-    if (!isUserGroupMember)
+    const isUserGroupOrganizer = await this.groupMemberService.isGroupOrganizer(
+      body.groupId,
+      userId
+    )
+    if (!isUserGroupOrganizer)
       throw new BadRequestException('User is not eligible to create an event in the group')
 
     const newEvent = new this.EventModel({

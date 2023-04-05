@@ -58,7 +58,7 @@ export class GroupMemberService {
     ).exec()
   }
 
-  private async isGroupOrganizer(groupId: string, memberId: string): Promise<boolean> {
+  async isGroupOrganizer(groupId: string, memberId: string): Promise<boolean> {
     const group = await this.GroupModel.findOne({
       _id: groupId,
       members: { $elemMatch: { id: memberId, isOrganizer: true } }

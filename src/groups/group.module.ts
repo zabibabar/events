@@ -8,6 +8,7 @@ import { UserModule } from 'src/users/user.module'
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module'
 import { EventsModule } from 'src/events/event.module'
 import { GroupMemberService } from './group-member.service'
+import { OrganizerGuard } from './guards/organizer.guard'
 
 @Module({
   imports: [
