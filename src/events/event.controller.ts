@@ -31,11 +31,11 @@ export class EventsController {
   constructor(private eventService: EventService) {}
 
   @Get()
-  getEventsByGroupId(
+  getEvents(
     @UserExternalId(UserIdByExternalIdPipe) userId: string,
     @Query() query: EventQueryParamDTO
   ): Promise<Event[]> {
-    return this.eventService.getEventsByGroupId(userId, query)
+    return this.eventService.getEvents(userId, query)
   }
 
   @Get(':id')

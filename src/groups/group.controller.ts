@@ -23,14 +23,19 @@ import { GroupService } from './group.service'
 import { Group } from './interfaces/group.interface'
 import { Member } from './interfaces/member.interface'
 import { GroupMemberService } from './group-member.service'
+import { GroupQueryParamDTO } from './dto/group-query-param.dto'
+import { GroupDeleteDTO } from './dto/group-delete.dto'
 
 @Controller('groups')
 export class GroupController {
   constructor(private groupService: GroupService, private groupMemberService: GroupMemberService) {}
 
   @Get()
-  getGroups(@UserExternalId(UserIdByExternalIdPipe) userId: string): Promise<Group[]> {
-    return this.groupService.getGroups(userId)
+  getGroups(
+    @UserExternalId(UserIdByExternalIdPipe) userId: string,
+    @Query() query: GroupQueryParamDTO
+  ): Promise<Group[]> {
+    return this.groupService.getGroups(userId, query)
   }
 
   @Post()
@@ -53,8 +58,8 @@ export class GroupController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteGroup(@Param() { id }: MongoIdParams): Promise<void> {
-    return this.groupService.deleteGroup(id)
+  deleteGroup(@Param() { id }: MongoIdParams, @Body() body: GroupDeleteDTO): Promise<void> {
+    return this.groupService.deleteGroup(id, body.currentDate)
   }
 
   @Post(':id/uploadPicture')

@@ -6,7 +6,6 @@ import { EventDocument, EVENT_COLLECTION_NAME } from './schemas/event.schema'
 import { Event } from './interfaces/event.interface'
 import { Attendee } from './interfaces/attendee.interface'
 import { CreateEventDTO } from './dto/create-event.dto'
-import { GroupService } from 'src/groups/group.service'
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 import { UpdateAttendeeDTO } from './dto/update-attendee-dto'
 import { UpdateEventDTO } from './dto/update-event.dto'
@@ -17,18 +16,19 @@ import { GroupMemberService } from 'src/groups/group-member.service'
 export class EventService {
   constructor(
     @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>,
-    private groupService: GroupService,
     private groupMemberService: GroupMemberService,
     private cloudinary: CloudinaryService
   ) {}
 
-  async getEventsByGroupId(userId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
+  async getEvents(userId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
     const { skip, pastLimit, upcomingLimit, currentDate, groupId } = filterOptions
     const events: Event[] = []
     const filterQuery: FilterQuery<EventDocument> = {}
 
+    if (!groupId && !userId) throw new BadRequestException('Invalid Request Params')
+
     if (groupId) filterQuery.groupId = groupId
-    else filterQuery.attendees = { $elemMatch: { id: userId, isGoing: true } }
+    if (userId) filterQuery.attendees = { $elemMatch: { id: userId, isGoing: true } }
 
     if (pastLimit)
       events.push(...(await this.getPastEvents(filterQuery, pastLimit, skip, currentDate)))

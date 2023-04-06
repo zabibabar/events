@@ -7,13 +7,12 @@ import {
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
-
 import { GroupDocument, GROUP_COLLECTION_NAME } from './schemas/group.schema'
 import { Group } from './interfaces/group.interface'
-import { Member } from './interfaces/member.interface'
 import { CreateGroupDTO } from './dto/create-group.dto'
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 import { EventService } from 'src/events/event.service'
+import { GroupQueryParamDTO } from './dto/group-query-param.dto'
 
 @Injectable()
 export class GroupService {
@@ -23,10 +22,13 @@ export class GroupService {
     private cloudinary: CloudinaryService
   ) {}
 
-  async getGroups(userId: string): Promise<Group[]> {
+  async getGroups(userId: string, { limit, skip }: GroupQueryParamDTO): Promise<Group[]> {
     const groups = await this.GroupModel.find({
       members: { $elemMatch: { id: userId } }
-    }).exec()
+    })
+      .limit(limit)
+      .skip(skip)
+      .exec()
 
     return groups.map((group) => this.convertGroupDocumentToGroup(group))
   }
@@ -69,11 +71,11 @@ export class GroupService {
     return this.convertGroupDocumentToGroup(groupDocument)
   }
 
-  async deleteGroup(groupId: string): Promise<void> {
-    const events = await this.eventService.getEventsByGroupId('', {
+  async deleteGroup(groupId: string, currentDate: Date): Promise<void> {
+    const events = await this.eventService.getEvents('', {
       groupId,
-      upcomingLimit: 1,
-      currentDate: new Date()
+      currentDate,
+      upcomingLimit: 1
     })
     if (events.length > 0) throw new NotFoundException('Cannot delete group with upcoming events')
     const result = await this.GroupModel.deleteOne({ _id: groupId }).exec()
