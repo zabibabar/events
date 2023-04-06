@@ -7,8 +7,7 @@ export const AttendeeSchema = new Schema<Attendee>(
     id: {
       type: Schema.Types.ObjectId,
       ref: USER_COLLECTION_NAME,
-      required: true,
-      unique: true
+      required: true
     },
     isGoing: Boolean
   },
