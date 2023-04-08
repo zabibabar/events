@@ -17,7 +17,7 @@ export const NotificationSchema = new Schema<Notification>(
     readAt: { type: Date }
   },
   {
-    toJSON: {
+    toObject: {
       virtuals: true,
       transform: (_, ret) => {
         delete ret.__v
