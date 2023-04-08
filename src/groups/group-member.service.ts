@@ -13,6 +13,11 @@ export class GroupMemberService {
 
   async getGroupMembers(groupId: string): Promise<Member[]> {
     const groupDocument = await this.GroupModel.findById(groupId)
+      .populate({
+        path: 'members.user',
+        select: 'name picture'
+      })
+      .exec()
     return this.validateGroupAndReturnMembers(groupDocument)
   }
 
@@ -21,7 +26,12 @@ export class GroupMemberService {
       { _id: groupId, 'members.id': { $ne: userId } },
       { $push: { members: { id: userId, isOrganizer: false } } },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'members.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.validateGroupAndReturnMembers(groupDocument)
   }
@@ -53,7 +63,12 @@ export class GroupMemberService {
     const groupWithDeletedMember = await this.GroupModel.findOneAndUpdate(
       { _id: groupId },
       { $pull: { members: { id: memberId } } }
-    ).exec()
+    )
+      .populate({
+        path: 'members.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.validateGroupAndReturnMembers(groupWithDeletedMember)
   }
@@ -74,6 +89,11 @@ export class GroupMemberService {
       { $set: { 'members.$.isOrganizer': true } },
       { new: true }
     )
+      .populate({
+        path: 'members.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.validateGroupAndReturnMembers(groupDoc)
   }
@@ -98,6 +118,11 @@ export class GroupMemberService {
       { $set: { 'members.$.isOrganizer': false } },
       { new: true }
     )
+      .populate({
+        path: 'members.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.validateGroupAndReturnMembers(groupDoc)
   }

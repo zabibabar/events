@@ -26,7 +26,7 @@ import { Member } from './interfaces/member.interface'
 import { GroupMemberService } from './group-member.service'
 import { GroupQueryParamDTO } from './dto/group-query-param.dto'
 import { GroupDeleteDTO } from './dto/group-delete.dto'
-import { OrganizerGuard } from './guards/organizer.guard'
+import { GroupOrganizerGuard } from './guards/group-organizer.guard'
 import { MemberDTO } from './dto/update-member.dto'
 
 @Controller('groups')
@@ -55,20 +55,20 @@ export class GroupController {
   }
 
   @Patch(':id')
-  @UseGuards(OrganizerGuard)
+  @UseGuards(GroupOrganizerGuard)
   updateGroup(@Param() { id }: MongoIdParams, @Body() body: UpdateGroupDTO): Promise<Group> {
     return this.groupService.updateGroup(id, body)
   }
 
   @Delete(':id')
-  @UseGuards(OrganizerGuard)
+  @UseGuards(GroupOrganizerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteGroup(@Param() { id }: MongoIdParams, @Body() body: GroupDeleteDTO): Promise<void> {
     return this.groupService.deleteGroup(id, body.currentDate)
   }
 
   @Post(':id/uploadPicture')
-  @UseGuards(OrganizerGuard)
+  @UseGuards(GroupOrganizerGuard)
   @UseInterceptors(FileInterceptor('group_picture'))
   uploadGroupPicture(
     @Param() { id }: MongoIdParams,
@@ -91,7 +91,7 @@ export class GroupController {
   }
 
   @Post(':id/members')
-  @UseGuards(OrganizerGuard)
+  @UseGuards(GroupOrganizerGuard)
   addGroupMember(
     @Param() { id }: MongoIdParams,
     @Body() body: { userId: string }
@@ -108,7 +108,7 @@ export class GroupController {
   }
 
   @Patch(':id/members/:memberId')
-  @UseGuards(OrganizerGuard)
+  @UseGuards(GroupOrganizerGuard)
   removeGroupOrganizer(
     @Param() { id, memberId }: MongoIdParams & { memberId: string },
     @UserExternalId(UserIdByExternalIdPipe) userId: string,
