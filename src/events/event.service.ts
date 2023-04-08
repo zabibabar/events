@@ -141,6 +141,7 @@ export class EventService {
     attendeeId: string,
     updates: UpdateAttendeeDTO
   ): Promise<Attendee[]> {
+    // Check if current user is attendee or organizer of the group
     const attendees = await this.getEventAttendees(eventId)
     const isAttendeeNew = !attendees.some(({ id }) => id.equals(attendeeId))
 

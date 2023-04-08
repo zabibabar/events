@@ -13,9 +13,7 @@ export class GroupMemberService {
 
   async getGroupMembers(groupId: string): Promise<Member[]> {
     const groupDocument = await this.GroupModel.findById(groupId)
-    if (!groupDocument) throw new NotFoundException('Group not found')
-
-    return groupDocument.members
+    return this.validateGroupAndReturnMembers(groupDocument)
   }
 
   async addGroupMember(groupId: string, userId: string): Promise<Member[]> {
@@ -25,26 +23,26 @@ export class GroupMemberService {
       { new: true }
     ).exec()
 
-    if (!groupDocument) throw new NotFoundException('Group not found')
-
-    return groupDocument.members
+    return this.validateGroupAndReturnMembers(groupDocument)
   }
 
-  async isGroupMember(groupId: string, memberId: string): Promise<boolean> {
-    const groupMembers = await this.getGroupMembers(groupId)
-    return groupMembers.some(({ id }) => id.equals(memberId))
-  }
+  async removeGroupMember(
+    groupId: string,
+    memberId: string,
+    currentUserId: string
+  ): Promise<Member[]> {
+    const isRemovingSelf = memberId === currentUserId
 
-  async removeGroupMember(groupId: string, memberId: string, userId: string): Promise<void> {
-    const isUserGroupOrganizer = await this.isGroupOrganizer(groupId, userId)
-    if (!isUserGroupOrganizer)
-      throw new BadRequestException('User does not have access to remove member from group')
+    if (!isRemovingSelf) {
+      const isCurrentUserGroupOrganizer = await this.isGroupOrganizer(groupId, currentUserId)
+      if (!isCurrentUserGroupOrganizer)
+        throw new BadRequestException('User does not have access to remove member from group')
 
-    const isMemberGroupOrganizer = await this.isGroupOrganizer(groupId, memberId)
-    if (!isMemberGroupOrganizer)
-      throw new BadRequestException('You cannot remove an organizer from the group')
+      const isMemberGroupOrganizer = await this.isGroupOrganizer(groupId, memberId)
+      if (isMemberGroupOrganizer)
+        throw new BadRequestException('You cannot remove an organizer from the group')
+    }
 
-    const isRemovingSelf = memberId === userId
     const group = await this.GroupModel.findById(groupId, 'organizerCount').exec()
 
     if (isRemovingSelf && group?.organizersCount === 1)
@@ -52,17 +50,61 @@ export class GroupMemberService {
         'You cannot remove yourself if you are the only organizer left in the group.'
       )
 
-    await this.GroupModel.updateOne(
+    const groupWithDeletedMember = await this.GroupModel.findOneAndUpdate(
       { _id: groupId },
       { $pull: { members: { id: memberId } } }
     ).exec()
+
+    return this.validateGroupAndReturnMembers(groupWithDeletedMember)
+  }
+
+  async isGroupMember(groupId: string, memberId: string): Promise<boolean> {
+    const groupMembers = await this.getGroupMembers(groupId)
+    return groupMembers.some(({ id }) => id.equals(memberId))
   }
 
   async isGroupOrganizer(groupId: string, memberId: string): Promise<boolean> {
-    const group = await this.GroupModel.findOne({
-      _id: groupId,
-      members: { $elemMatch: { id: memberId, isOrganizer: true } }
-    })
-    return group !== null
+    const groupMembers = await this.getGroupMembers(groupId)
+    return groupMembers.some(({ id, isOrganizer }) => id.equals(memberId) && isOrganizer)
+  }
+
+  async makeGroupOrganizer(groupId: string, memberId: string): Promise<Member[]> {
+    const groupDoc = await this.GroupModel.findOneAndUpdate(
+      { _id: groupId, 'members.id': memberId },
+      { $set: { 'members.$.isOrganizer': true } },
+      { new: true }
+    )
+
+    return this.validateGroupAndReturnMembers(groupDoc)
+  }
+
+  async removeGroupOrganizer(
+    groupId: string,
+    memberId: string,
+    currentUserId: string
+  ): Promise<Member[]> {
+    if (memberId !== currentUserId)
+      throw new BadRequestException('You can only remove yourself as an organizer!')
+
+    const groupMembers = await this.getGroupMembers(groupId)
+    const organizerCount = groupMembers.filter(({ isOrganizer }) => isOrganizer).length
+    if (organizerCount === 1)
+      throw new BadRequestException(
+        'The group has only one organizer. Please make someone else an organizer before removing yourself!'
+      )
+
+    const groupDoc = await this.GroupModel.findOneAndUpdate(
+      { _id: groupId, 'members.id': memberId },
+      { $set: { 'members.$.isOrganizer': false } },
+      { new: true }
+    )
+
+    return this.validateGroupAndReturnMembers(groupDoc)
+  }
+
+  private validateGroupAndReturnMembers(group: GroupDocument | null): Member[] {
+    if (group === null) throw new NotFoundException('Invalid Group Id')
+
+    return group.members
   }
 }

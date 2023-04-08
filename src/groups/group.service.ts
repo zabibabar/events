@@ -72,12 +72,15 @@ export class GroupService {
   }
 
   async deleteGroup(groupId: string, currentDate: Date): Promise<void> {
-    const events = await this.eventService.getEvents('', {
-      groupId,
-      currentDate,
-      upcomingLimit: 1
-    })
-    if (events.length > 0) throw new NotFoundException('Cannot delete group with upcoming events')
+    const hasUpcomingEvents = (
+      await this.eventService.getEvents('', {
+        groupId,
+        currentDate,
+        upcomingLimit: 1
+      })
+    ).length
+    if (hasUpcomingEvents > 0)
+      throw new NotFoundException('Cannot delete group with upcoming events')
     const result = await this.GroupModel.deleteOne({ _id: groupId }).exec()
     if (result.deletedCount === 0) throw new NotFoundException('Group not found')
   }

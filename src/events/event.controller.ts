@@ -11,6 +11,7 @@ import {
   Put,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
@@ -25,6 +26,7 @@ import { UpdateEventDTO } from './dto/update-event.dto'
 import { EventService } from './event.service'
 import { Attendee } from './interfaces/attendee.interface'
 import { Event } from './interfaces/event.interface'
+import { OrganizerGuard } from 'src/groups/guards/organizer.guard'
 
 @Controller('events')
 export class EventsController {
@@ -52,11 +54,13 @@ export class EventsController {
   }
 
   @Patch(':id')
+  @UseGuards(OrganizerGuard)
   updateEvent(@Param() { id }: MongoIdParams, @Body() body: UpdateEventDTO): Promise<Event> {
     return this.eventService.updateEvent(id, body)
   }
 
   @Delete(':id')
+  @UseGuards(OrganizerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteEvent(@Param() { id }: MongoIdParams): Promise<void> {
     return this.eventService.deleteEvent(id)

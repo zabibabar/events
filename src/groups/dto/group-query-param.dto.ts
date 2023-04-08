@@ -12,5 +12,5 @@ export class GroupQueryParamDTO {
   @Type(() => Number)
   @Min(0)
   @Max(10)
-  limit = 0
+  limit: number
 }

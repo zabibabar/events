@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
@@ -25,6 +26,8 @@ import { Member } from './interfaces/member.interface'
 import { GroupMemberService } from './group-member.service'
 import { GroupQueryParamDTO } from './dto/group-query-param.dto'
 import { GroupDeleteDTO } from './dto/group-delete.dto'
+import { OrganizerGuard } from './guards/organizer.guard'
+import { MemberDTO } from './dto/update-member.dto'
 
 @Controller('groups')
 export class GroupController {
@@ -52,17 +55,20 @@ export class GroupController {
   }
 
   @Patch(':id')
+  @UseGuards(OrganizerGuard)
   updateGroup(@Param() { id }: MongoIdParams, @Body() body: UpdateGroupDTO): Promise<Group> {
     return this.groupService.updateGroup(id, body)
   }
 
   @Delete(':id')
+  @UseGuards(OrganizerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteGroup(@Param() { id }: MongoIdParams, @Body() body: GroupDeleteDTO): Promise<void> {
     return this.groupService.deleteGroup(id, body.currentDate)
   }
 
   @Post(':id/uploadPicture')
+  @UseGuards(OrganizerGuard)
   @UseInterceptors(FileInterceptor('group_picture'))
   uploadGroupPicture(
     @Param() { id }: MongoIdParams,
@@ -85,6 +91,7 @@ export class GroupController {
   }
 
   @Post(':id/members')
+  @UseGuards(OrganizerGuard)
   addGroupMember(
     @Param() { id }: MongoIdParams,
     @Body() body: { userId: string }
@@ -93,11 +100,22 @@ export class GroupController {
   }
 
   @Delete(':id/members/:memberId')
-  @HttpCode(HttpStatus.NO_CONTENT)
   removeGroupMember(
     @Param() { id, memberId }: MongoIdParams & { memberId: string },
     @UserExternalId(UserIdByExternalIdPipe) userId: string
-  ): Promise<void> {
+  ): Promise<Member[]> {
     return this.groupMemberService.removeGroupMember(id, memberId, userId)
+  }
+
+  @Patch(':id/members/:memberId')
+  @UseGuards(OrganizerGuard)
+  removeGroupOrganizer(
+    @Param() { id, memberId }: MongoIdParams & { memberId: string },
+    @UserExternalId(UserIdByExternalIdPipe) userId: string,
+    @Body() body: MemberDTO
+  ): Promise<Member[]> {
+    if (body.isOrganizer) return this.groupMemberService.makeGroupOrganizer(id, memberId)
+
+    return this.groupMemberService.removeGroupOrganizer(id, memberId, userId)
   }
 }
