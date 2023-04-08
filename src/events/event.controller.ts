@@ -8,7 +8,6 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Query,
   UploadedFile,
   UseGuards,
@@ -20,13 +19,14 @@ import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
 import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.pipe'
 import { CreateEventDTO } from './dto/create-event.dto'
 import { EventQueryParamDTO } from './dto/event-query-param.dto'
-import { UpdateAttendeeDTO } from './dto/update-attendee-dto'
+import { UpdateAttendeeDTO } from './dto/update-attendee.dto'
 import { UpdateEventDTO } from './dto/update-event.dto'
 
 import { EventService } from './event.service'
 import { Attendee } from './interfaces/attendee.interface'
 import { Event } from './interfaces/event.interface'
-import { OrganizerGuard } from 'src/groups/guards/organizer.guard'
+import { EventFutureGuard } from './guards/event-future.guard'
+import { AddAttendeeDTO } from './dto/add-attendee.dto'
 
 @Controller('events')
 export class EventsController {
@@ -54,13 +54,11 @@ export class EventsController {
   }
 
   @Patch(':id')
-  @UseGuards(OrganizerGuard)
   updateEvent(@Param() { id }: MongoIdParams, @Body() body: UpdateEventDTO): Promise<Event> {
     return this.eventService.updateEvent(id, body)
   }
 
   @Delete(':id')
-  @UseGuards(OrganizerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteEvent(@Param() { id }: MongoIdParams): Promise<void> {
     return this.eventService.deleteEvent(id)
@@ -80,12 +78,21 @@ export class EventsController {
     return this.eventService.getEventAttendees(id)
   }
 
-  @Put(':id/attendees')
-  updateEventAttendee(
+  @Post(':id/attendees')
+  @UseGuards(EventFutureGuard)
+  addEventAttendee(
     @Param() { id }: MongoIdParams,
-    @UserExternalId(UserIdByExternalIdPipe) userId: string,
+    @Body() { userId }: AddAttendeeDTO
+  ): Promise<Attendee[]> {
+    return this.eventService.addEventAttendee(id, userId)
+  }
+
+  @Patch(':id/attendees/:attendeeId')
+  @UseGuards(EventFutureGuard)
+  updateEventAttendee(
+    @Param() { id, attendeeId }: MongoIdParams & { attendeeId: string },
     @Body() body: UpdateAttendeeDTO
   ): Promise<Attendee[]> {
-    return this.eventService.updateEventAttendee(id, userId, body)
+    return this.eventService.updateEventAttendee(id, attendeeId, body)
   }
 }

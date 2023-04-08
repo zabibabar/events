@@ -7,7 +7,7 @@ import { Event } from './interfaces/event.interface'
 import { Attendee } from './interfaces/attendee.interface'
 import { CreateEventDTO } from './dto/create-event.dto'
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
-import { UpdateAttendeeDTO } from './dto/update-attendee-dto'
+import { UpdateAttendeeDTO } from './dto/update-attendee.dto'
 import { UpdateEventDTO } from './dto/update-event.dto'
 import { EventQueryParamDTO } from './dto/event-query-param.dto'
 import { GroupMemberService } from 'src/groups/group-member.service'
@@ -82,6 +82,12 @@ export class EventService {
     return pastEvent.map((event) => this.convertEventDocumentToEvent(event))
   }
 
+  async isEventUpcoming(eventId: string, currentDate: Date): Promise<boolean> {
+    const event = await this.getEvent(eventId)
+
+    return event.timeEnd.getTime() > currentDate.getTime()
+  }
+
   async getEvent(eventId: string): Promise<Event> {
     let eventDoc: EventDocument | null = null
     try {
@@ -141,11 +147,11 @@ export class EventService {
     attendeeId: string,
     updates: UpdateAttendeeDTO
   ): Promise<Attendee[]> {
-    // Check if current user is attendee or organizer of the group
+    // TODO: Check if current user is organizer of the group
     const attendees = await this.getEventAttendees(eventId)
-    const isAttendeeNew = !attendees.some(({ id }) => id.equals(attendeeId))
+    const isAttendee = attendees.find(({ id }) => id.equals(attendeeId))
 
-    if (isAttendeeNew) return this.addEventAttendee(eventId, attendeeId, updates)
+    if (!isAttendee) throw new NotFoundException('Attendee not found')
 
     const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventId, 'attendees.id': attendeeId },
@@ -161,14 +167,10 @@ export class EventService {
     return this.convertEventDocumentToEvent(eventDoc).attendees
   }
 
-  async addEventAttendee(
-    eventId: string,
-    attendeeId: string,
-    updates: UpdateAttendeeDTO
-  ): Promise<Attendee[]> {
+  async addEventAttendee(eventId: string, attendeeId: string): Promise<Attendee[]> {
     const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventId, 'attendees.id': { $ne: attendeeId } },
-      { $push: { ...updates, id: attendeeId } },
+      { $push: { attendees: { id: attendeeId, isGoing: true } } },
       { new: true }
     )
       .populate({
