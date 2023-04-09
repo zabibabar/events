@@ -60,9 +60,11 @@ export class GroupMemberService {
         'You cannot remove yourself if you are the only organizer left in the group.'
       )
 
+    // TODO: remove from all events as attendees or typeorm
     const groupWithDeletedMember = await this.GroupModel.findOneAndUpdate(
       { _id: groupId },
-      { $pull: { members: { id: memberId } } }
+      { $pull: { members: { id: memberId } } },
+      { new: true }
     )
       .populate({
         path: 'members.user',

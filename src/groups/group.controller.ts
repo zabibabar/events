@@ -28,6 +28,7 @@ import { GroupQueryParamDTO } from './dto/group-query-param.dto'
 import { GroupDeleteDTO } from './dto/group-delete.dto'
 import { GroupOrganizerGuard } from './guards/group-organizer.guard'
 import { MemberDTO } from './dto/update-member.dto'
+import { GroupMemberGuard } from './guards/group-member.guard'
 
 @Controller('groups')
 export class GroupController {
@@ -50,6 +51,7 @@ export class GroupController {
   }
 
   @Get(':id')
+  @UseGuards(GroupMemberGuard)
   getGroup(@Param() { id }: MongoIdParams): Promise<Group> {
     return this.groupService.getGroup(id)
   }
@@ -86,6 +88,7 @@ export class GroupController {
   }
 
   @Get(':id/members')
+  @UseGuards(GroupMemberGuard)
   getGroupMembers(@Param() { id }: MongoIdParams): Promise<Member[]> {
     return this.groupMemberService.getGroupMembers(id)
   }
