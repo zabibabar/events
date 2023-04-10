@@ -32,12 +32,16 @@ export const EventSchema = new Schema<Event>(
   }
 )
 
-EventSchema.virtual('attendeesCount', function (this: EventDocument) {
+EventSchema.virtual('attendeesCount').get(function (this: EventDocument) {
   return this.attendees.length
 })
 
-EventSchema.virtual('goingAttendeesCount', function (this: EventDocument) {
+EventSchema.virtual('goingAttendeesCount').get(function (this: EventDocument) {
   return this.attendees.filter(({ isGoing }) => isGoing).length
+})
+
+EventSchema.virtual('notGoingAttendeesCount').get(function (this: EventDocument) {
+  return this.attendees.filter(({ isGoing }) => !isGoing).length
 })
 
 AttendeeSchema.virtual('group', {

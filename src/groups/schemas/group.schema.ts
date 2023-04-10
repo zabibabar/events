@@ -29,10 +29,10 @@ export const GroupSchema = new Schema<Group>(
   }
 )
 
-GroupSchema.virtual('membersCount', function (this: GroupDocument) {
+GroupSchema.virtual('membersCount').get(function (this: GroupDocument) {
   return this.members.length
 })
 
-GroupSchema.virtual('organizersCount', function (this: GroupDocument) {
+GroupSchema.virtual('organizersCount').get(function (this: GroupDocument) {
   return this.members.filter(({ isOrganizer }) => isOrganizer).length
 })
