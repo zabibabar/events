@@ -129,7 +129,7 @@ export class EventService {
 
     const newEvent = new this.EventModel({
       ...body,
-      attendees: [{ id: userId, going: true, isOrganizer: true }]
+      attendees: [{ id: userId, isGoing: true, isOrganizer: true }]
     })
     return this.convertEventDocumentToEvent(await newEvent.save())
   }

@@ -9,7 +9,8 @@ export const AttendeeSchema = new Schema<Attendee>(
       ref: USER_COLLECTION_NAME,
       required: true
     },
-    isGoing: Boolean
+    isGoing: Boolean,
+    isOrganizer: { type: Boolean, default: false }
   },
   { timestamps: true, _id: false, toJSON: { virtuals: true } }
 )
