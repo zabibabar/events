@@ -27,6 +27,9 @@ import { Attendee } from './interfaces/attendee.interface'
 import { Event } from './interfaces/event.interface'
 import { EventFutureGuard } from './guards/event-future.guard'
 import { AddAttendeeDTO } from './dto/add-attendee.dto'
+import { EventCountQueryParamDTO } from './dto/event-count-query-param.dto'
+import { EventCountResponseDTO } from './dto/event-count-response.dto'
+import { EventGroupMemberGuard } from './guards/event-group-member.guard'
 
 @Controller('events')
 export class EventsController {
@@ -40,7 +43,13 @@ export class EventsController {
     return this.eventService.getEvents(userId, query)
   }
 
+  @Get('count')
+  getEventCount(@Query() query: EventCountQueryParamDTO): Promise<EventCountResponseDTO> {
+    return this.eventService.getEventCountByGroupId(query.groupId, query.currentDate)
+  }
+
   @Get(':id')
+  @UseGuards(EventGroupMemberGuard)
   getEvent(@Param() { id }: MongoIdParams): Promise<Event> {
     return this.eventService.getEvent(id)
   }
@@ -54,17 +63,20 @@ export class EventsController {
   }
 
   @Patch(':id')
+  @UseGuards(EventGroupMemberGuard)
   updateEvent(@Param() { id }: MongoIdParams, @Body() body: UpdateEventDTO): Promise<Event> {
     return this.eventService.updateEvent(id, body)
   }
 
   @Delete(':id')
+  @UseGuards(EventGroupMemberGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteEvent(@Param() { id }: MongoIdParams): Promise<void> {
     return this.eventService.deleteEvent(id)
   }
 
   @Post(':id/uploadPicture')
+  @UseGuards(EventGroupMemberGuard)
   @UseInterceptors(FileInterceptor('event_picture'))
   uploadGroupPicture(
     @Param() { id }: MongoIdParams,
@@ -74,12 +86,13 @@ export class EventsController {
   }
 
   @Get(':id/attendees')
+  @UseGuards(EventGroupMemberGuard)
   getEventAttendees(@Param() { id }: MongoIdParams): Promise<Attendee[]> {
     return this.eventService.getEventAttendees(id)
   }
 
   @Post(':id/attendees')
-  @UseGuards(EventFutureGuard)
+  @UseGuards(EventGroupMemberGuard, EventFutureGuard)
   addEventAttendee(
     @Param() { id }: MongoIdParams,
     @Body() { userId }: AddAttendeeDTO
@@ -88,7 +101,7 @@ export class EventsController {
   }
 
   @Patch(':id/attendees/:attendeeId')
-  @UseGuards(EventFutureGuard)
+  @UseGuards(EventGroupMemberGuard, EventFutureGuard)
   updateEventAttendee(
     @Param() { id, attendeeId }: MongoIdParams & { attendeeId: string },
     @Body() body: UpdateAttendeeDTO

@@ -39,3 +39,10 @@ EventSchema.virtual('attendeesCount', function (this: EventDocument) {
 EventSchema.virtual('goingAttendeesCount', function (this: EventDocument) {
   return this.attendees.filter(({ isGoing }) => isGoing).length
 })
+
+AttendeeSchema.virtual('group', {
+  ref: GROUP_COLLECTION_NAME,
+  localField: 'groupId',
+  foreignField: '_id',
+  justOne: true
+})

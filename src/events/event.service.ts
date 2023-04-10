@@ -11,6 +11,7 @@ import { UpdateAttendeeDTO } from './dto/update-attendee.dto'
 import { UpdateEventDTO } from './dto/update-event.dto'
 import { EventQueryParamDTO } from './dto/event-query-param.dto'
 import { GroupMemberService } from 'src/groups/group-member.service'
+import { EventCountResponseDTO } from './dto/event-count-response.dto'
 
 @Injectable()
 export class EventService {
@@ -22,14 +23,13 @@ export class EventService {
 
   async getEvents(userId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
     const { skip, pastLimit, upcomingLimit, currentDate, groupId } = filterOptions
-    const events: Event[] = []
-    const filterQuery: FilterQuery<EventDocument> = {}
-
     if (!groupId && !userId) throw new BadRequestException('Invalid Request Params')
 
+    const filterQuery: FilterQuery<EventDocument> = {}
     if (groupId) filterQuery.groupId = groupId
     if (userId) filterQuery.attendees = { $elemMatch: { id: userId, isGoing: true } }
 
+    const events: Event[] = []
     if (pastLimit)
       events.push(...(await this.getPastEvents(filterQuery, pastLimit, skip, currentDate)))
     if (upcomingLimit)
@@ -80,6 +80,20 @@ export class EventService {
       .exec()
 
     return pastEvent.map((event) => this.convertEventDocumentToEvent(event))
+  }
+
+  async getEventCountByGroupId(groupId: string, currentDate: Date): Promise<EventCountResponseDTO> {
+    const upcoming = await this.EventModel.countDocuments({
+      groupId,
+      timeStart: { $gte: currentDate }
+    })
+
+    const past = await this.EventModel.countDocuments({
+      groupId,
+      timeEnd: { $lt: currentDate }
+    })
+
+    return { upcoming, past }
   }
 
   async isEventUpcoming(eventId: string, currentDate: Date): Promise<boolean> {

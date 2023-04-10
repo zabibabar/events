@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer'
-import { IsInt, IsMongoId, IsOptional, Max, Min } from 'class-validator'
+import { IsBoolean, IsInt, IsMongoId, IsOptional, Max, Min } from 'class-validator'
 
 export class EventQueryParamDTO {
   @IsOptional()
@@ -29,4 +29,8 @@ export class EventQueryParamDTO {
   @IsOptional()
   @Type(() => Date)
   currentDate: Date
+
+  @IsOptional()
+  @IsBoolean()
+  count = false
 }

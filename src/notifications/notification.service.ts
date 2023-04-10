@@ -41,6 +41,7 @@ export class NotificationService {
     const filterQuery: FilterQuery<NotificationDocument> = {}
 
     if (isRead) filterQuery.readAt = { $lt: currentDate }
+    if (isRead === false) filterQuery.readAt = undefined
     if (groupId) filterQuery.groupId = groupId
     else if (eventId) filterQuery.eventId = eventId
 
