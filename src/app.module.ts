@@ -9,6 +9,9 @@ import { UserModule } from './users/user.module'
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -19,10 +22,7 @@ import { UserModule } from './users/user.module'
     EventsModule,
     GroupModule,
     UserModule,
-    AuthModule,
-    ConfigModule.forRoot({
-      isGlobal: true
-    })
+    AuthModule
   ]
 })
 export class AppModule {}

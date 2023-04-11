@@ -13,6 +13,6 @@ async function bootstrap() {
   app.useGlobalGuards(new (AuthGuard('jwt'))())
   app.setGlobalPrefix('api')
 
-  await app.listen(9000)
+  await app.listen(process.env.PORT ?? 9000)
 }
 bootstrap()
