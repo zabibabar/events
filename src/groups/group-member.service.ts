@@ -1,14 +1,22 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
 import { GroupDocument, GROUP_COLLECTION_NAME } from './schemas/group.schema'
 import { Member } from './interfaces/member.interface'
+import { EventService } from 'src/events/event.service'
 
 @Injectable()
 export class GroupMemberService {
   constructor(
-    @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>
+    @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>,
+    @Inject(forwardRef(() => EventService)) private eventService: EventService
   ) {}
 
   async getGroupMembers(groupId: string): Promise<Member[]> {
@@ -60,7 +68,7 @@ export class GroupMemberService {
         'You cannot remove yourself if you are the only organizer left in the group.'
       )
 
-    // TODO: remove from all events as attendees or typeorm
+    // TODO: transactions or typeorm/prisma
     const groupWithDeletedMember = await this.GroupModel.findOneAndUpdate(
       { _id: groupId },
       { $pull: { members: { id: memberId } } },
@@ -72,6 +80,7 @@ export class GroupMemberService {
       })
       .exec()
 
+    await this.eventService.removeAttendeeFromAllEvents(memberId)
     return this.validateGroupAndReturnMembers(groupWithDeletedMember)
   }
 
