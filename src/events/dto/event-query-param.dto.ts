@@ -1,11 +1,7 @@
 import { Type } from 'class-transformer'
-import { IsBoolean, IsDate, IsInt, IsMongoId, IsOptional, Max, Min } from 'class-validator'
+import { IsBoolean, IsDate, IsInt, IsOptional, Max, Min } from 'class-validator'
 
 export class EventQueryParamDTO {
-  @IsOptional()
-  @IsMongoId()
-  groupId: string
-
   @IsOptional()
   @IsInt()
   @Type(() => Number)

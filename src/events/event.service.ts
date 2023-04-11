@@ -21,13 +21,16 @@ export class EventService {
     private cloudinary: CloudinaryService
   ) {}
 
-  async getEvents(userId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
-    const { skip, pastLimit, upcomingLimit, currentDate, groupId } = filterOptions
-    if (!groupId && !userId) throw new BadRequestException('Invalid Request Params')
-
-    const filterQuery: FilterQuery<EventDocument> = {}
-    if (groupId) filterQuery.groupId = groupId
-    if (userId) filterQuery.attendees = { $elemMatch: { id: userId, isGoing: true } }
+  async getEventsByGroupId(
+    groupId: string,
+    userId: string,
+    filterOptions: EventQueryParamDTO
+  ): Promise<Event[]> {
+    const { skip, pastLimit, upcomingLimit, currentDate } = filterOptions
+    const filterQuery: FilterQuery<EventDocument> = {
+      groupId,
+      attendees: { $elemMatch: { id: userId, isGoing: true } }
+    }
 
     const events: Event[] = []
     if (pastLimit)

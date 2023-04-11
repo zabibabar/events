@@ -30,22 +30,29 @@ import { AddAttendeeDTO } from './dto/add-attendee.dto'
 import { EventCountQueryParamDTO } from './dto/event-count-query-param.dto'
 import { EventCountResponseDTO } from './dto/event-count-response.dto'
 import { EventGroupMemberGuard } from './guards/event-group-member.guard'
+import { GroupMemberGuard } from 'src/groups/guards/group-member.guard'
 
 @Controller('events')
 export class EventsController {
   constructor(private eventService: EventService) {}
 
-  @Get()
-  getEvents(
+  @Get('group/:id')
+  @UseGuards(GroupMemberGuard)
+  getEventsByGroupId(
     @UserExternalId(UserIdByExternalIdPipe) userId: string,
+    @Param() { id: groupId }: MongoIdParams,
     @Query() query: EventQueryParamDTO
   ): Promise<Event[]> {
-    return this.eventService.getEvents(userId, query)
+    return this.eventService.getEventsByGroupId(groupId, userId, query)
   }
 
-  @Get('count')
-  getEventCount(@Query() query: EventCountQueryParamDTO): Promise<EventCountResponseDTO> {
-    return this.eventService.getEventCountByGroupId(query.groupId, query.currentDate)
+  @Get('group/:id/count')
+  @UseGuards(GroupMemberGuard)
+  getEventCount(
+    @Param() { id: groupId }: MongoIdParams,
+    @Query() query: EventCountQueryParamDTO
+  ): Promise<EventCountResponseDTO> {
+    return this.eventService.getEventCountByGroupId(groupId, query.currentDate)
   }
 
   @Get(':id')
