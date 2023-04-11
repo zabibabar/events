@@ -61,7 +61,7 @@ export class GroupMemberService {
         throw new BadRequestException('You cannot remove an organizer from the group')
     }
 
-    const group = await this.GroupModel.findById(groupId, 'organizerCount').exec()
+    const group = await this.GroupModel.findById(groupId).exec()
 
     if (isRemovingSelf && group?.organizersCount === 1)
       throw new BadRequestException(
