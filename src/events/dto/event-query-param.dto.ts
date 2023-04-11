@@ -28,5 +28,5 @@ export class EventQueryParamDTO {
 
   @IsOptional()
   @IsBoolean()
-  count = false
+  isAttending = false
 }

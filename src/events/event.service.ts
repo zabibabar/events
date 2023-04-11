@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { FilterQuery, Model } from 'mongoose'
 
@@ -12,25 +18,38 @@ import { UpdateEventDTO } from './dto/update-event.dto'
 import { EventQueryParamDTO } from './dto/event-query-param.dto'
 import { GroupMemberService } from 'src/groups/group-member.service'
 import { EventCountResponseDTO } from './dto/event-count-response.dto'
+import { GroupService } from 'src/groups/group.service'
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>,
     private groupMemberService: GroupMemberService,
+    @Inject(forwardRef(() => GroupService)) private groupService: GroupService,
     private cloudinary: CloudinaryService
   ) {}
 
-  async getEventsByGroupId(
-    groupId: string,
-    userId: string,
-    filterOptions: EventQueryParamDTO
-  ): Promise<Event[]> {
+  async getEventsByUserId(userId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
+    const { skip, pastLimit, upcomingLimit, currentDate, isAttending } = filterOptions
+
+    const groups = await this.groupService.getGroups(userId, { skip: 0, limit: 0 })
+    const groupIds = groups.map(({ id }) => id)
+
+    const filterQuery: FilterQuery<EventDocument> = { groupId: { $in: groupIds } }
+    if (isAttending) filterQuery.attendees = { $elemMatch: { id: userId, isGoing: true } }
+
+    const events: Event[] = []
+    if (pastLimit)
+      events.push(...(await this.getPastEvents(filterQuery, pastLimit, skip, currentDate)))
+    if (upcomingLimit)
+      events.push(...(await this.getUpcomingEvents(filterQuery, upcomingLimit, skip, currentDate)))
+
+    return events
+  }
+
+  async getEventsByGroupId(groupId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
     const { skip, pastLimit, upcomingLimit, currentDate } = filterOptions
-    const filterQuery: FilterQuery<EventDocument> = {
-      groupId,
-      attendees: { $elemMatch: { id: userId, isGoing: true } }
-    }
+    const filterQuery: FilterQuery<EventDocument> = { groupId }
 
     const events: Event[] = []
     if (pastLimit)
@@ -197,6 +216,14 @@ export class EventService {
       .exec()
 
     return this.convertEventDocumentToEvent(eventDoc).attendees
+  }
+
+  async removeAttendeeFromAllEvents(attendeeId: string): Promise<void> {
+    await this.EventModel.updateMany(
+      { attendees: { $elemMatch: { id: attendeeId } } },
+      { $pull: { attendees: { id: attendeeId } } },
+      { new: true }
+    ).exec()
   }
 
   async uploadEventPicture(eventsId: string, file: Express.Multer.File): Promise<string> {

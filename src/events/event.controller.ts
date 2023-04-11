@@ -36,14 +36,21 @@ import { GroupMemberGuard } from 'src/groups/guards/group-member.guard'
 export class EventsController {
   constructor(private eventService: EventService) {}
 
+  @Get('user')
+  getEventsByUserId(
+    @UserExternalId(UserIdByExternalIdPipe) userId: string,
+    @Query() query: EventQueryParamDTO
+  ): Promise<Event[]> {
+    return this.eventService.getEventsByUserId(userId, query)
+  }
+
   @Get('group/:id')
   @UseGuards(GroupMemberGuard)
   getEventsByGroupId(
-    @UserExternalId(UserIdByExternalIdPipe) userId: string,
     @Param() { id: groupId }: MongoIdParams,
     @Query() query: EventQueryParamDTO
   ): Promise<Event[]> {
-    return this.eventService.getEventsByGroupId(groupId, userId, query)
+    return this.eventService.getEventsByGroupId(groupId, query)
   }
 
   @Get('group/:id/count')
