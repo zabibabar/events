@@ -15,6 +15,9 @@ export class UserService {
   ) {}
 
   async createUser({ picture, ...user }: CreateUserDTO): Promise<User> {
+    const existingUser = await this.UserModel.findOne({ externalId: user.externalId }).exec()
+    if (existingUser !== null) return existingUser.toJSON() as User
+
     const userDoc = new this.UserModel(user)
     const newUser = this.convertUserDocumentToUser(await userDoc.save())
 
@@ -63,7 +66,7 @@ export class UserService {
   private async findUser(id: string, externalId = false): Promise<User> {
     let userDoc: UserDocument | null = null
     try {
-      if (externalId) [userDoc] = await this.UserModel.find({ externalId: id }).exec()
+      if (externalId) userDoc = await this.UserModel.findOne({ externalId: id }).exec()
       else userDoc = await this.UserModel.findById(id).exec()
     } catch {
       throw new NotFoundException('User not found')
