@@ -66,7 +66,12 @@ export class GroupService {
       { _id: groupId },
       { $set: groupFields },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'members.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.convertGroupDocumentToGroup(groupDocument)
   }
