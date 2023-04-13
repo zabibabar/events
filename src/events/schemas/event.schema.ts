@@ -10,8 +10,12 @@ export const EVENT_COLLECTION_NAME = 'Event'
 
 export const EventSchema = new Schema<Event>(
   {
-    groupId: { type: Schema.Types.ObjectId, ref: GROUP_COLLECTION_NAME, required: true },
-    name: { type: String, required: true },
+    groupId: {
+      type: Schema.Types.ObjectId,
+      ref: GROUP_COLLECTION_NAME,
+      required: true
+    },
+    name: { type: String, required: true, maxlength: 35 },
     picture: { type: String, default: '' },
     timeStart: { type: Date, required: true },
     timeEnd: { type: Date, required: true },

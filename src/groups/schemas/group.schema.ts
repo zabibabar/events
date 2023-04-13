@@ -10,7 +10,7 @@ export const GROUP_COLLECTION_NAME = 'Group'
 
 export const GroupSchema = new Schema<Group>(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, maxlength: 35 },
     description: String,
     picture: { type: String, default: '' },
     inviteCode: String,
