@@ -22,7 +22,10 @@ export class GroupService {
     private cloudinary: CloudinaryService
   ) {}
 
-  async getGroups(userId: string, { limit, skip }: GroupQueryParamDTO): Promise<Group[]> {
+  async getGroupsByUserId(
+    userId: string,
+    { limit, skip }: GroupQueryParamDTO = { limit: 0, skip: 0 }
+  ): Promise<Group[]> {
     const groups = await this.GroupModel.find({
       members: { $elemMatch: { id: userId } }
     })

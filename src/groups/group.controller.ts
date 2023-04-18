@@ -39,7 +39,7 @@ export class GroupController {
     @UserExternalId(UserIdByExternalIdPipe) userId: string,
     @Query() query: GroupQueryParamDTO
   ): Promise<Group[]> {
-    return this.groupService.getGroups(userId, query)
+    return this.groupService.getGroupsByUserId(userId, query)
   }
 
   @Post()

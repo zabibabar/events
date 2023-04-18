@@ -29,10 +29,11 @@ export class EventService {
     private cloudinary: CloudinaryService
   ) {}
 
+  // Get events from groups that user is part
   async getEventsByUserId(userId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
     const { skip, pastLimit, upcomingLimit, currentDate, isAttending } = filterOptions
 
-    const groups = await this.groupService.getGroups(userId, { skip: 0, limit: 0 })
+    const groups = await this.groupService.getGroupsByUserId(userId)
     const groupIds = groups.map(({ id }) => id)
 
     const filterQuery: FilterQuery<EventDocument> = { groupId: { $in: groupIds } }
@@ -165,7 +166,12 @@ export class EventService {
       { _id: eventId },
       { $set: eventFields },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'attendees.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.convertEventDocumentToEvent(eventDoc)
   }
