@@ -29,15 +29,17 @@ export class EventService {
     private cloudinary: CloudinaryService
   ) {}
 
-  // Get events from groups that user is part
-  async getEventsByUserId(userId: string, filterOptions: EventQueryParamDTO): Promise<Event[]> {
-    const { skip, pastLimit, upcomingLimit, currentDate, isAttending } = filterOptions
+  async getEventsFromAllJoinedGroups(
+    userId: string,
+    filterOptions: EventQueryParamDTO
+  ): Promise<Event[]> {
+    const { skip, pastLimit, upcomingLimit, currentDate, isGoing } = filterOptions
 
     const groups = await this.groupService.getGroupsByUserId(userId)
     const groupIds = groups.map(({ id }) => id)
 
     const filterQuery: FilterQuery<EventDocument> = { groupId: { $in: groupIds } }
-    if (isAttending) filterQuery.attendees = { $elemMatch: { id: userId, isGoing: true } }
+    if (isGoing) filterQuery.attendees = { $elemMatch: { id: userId, isGoing: true } }
 
     const events: Event[] = []
     if (pastLimit)

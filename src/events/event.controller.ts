@@ -37,11 +37,11 @@ export class EventsController {
   constructor(private eventService: EventService) {}
 
   @Get('user')
-  getEventsByUserId(
+  getEventsFromAllJoinedGroups(
     @UserExternalId(UserIdByExternalIdPipe) userId: string,
     @Query() query: EventQueryParamDTO
   ): Promise<Event[]> {
-    return this.eventService.getEventsByUserId(userId, query)
+    return this.eventService.getEventsFromAllJoinedGroups(userId, query)
   }
 
   @Get('group/:id')
