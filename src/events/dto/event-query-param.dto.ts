@@ -28,5 +28,6 @@ export class EventQueryParamDTO {
 
   @IsOptional()
   @IsBoolean()
-  isGoing = false
+  @Type(() => Boolean)
+  isGoing: boolean
 }
