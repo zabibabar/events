@@ -10,7 +10,8 @@ export const AttendeeSchema = new Schema<Attendee>(
       required: true
     },
     isGoing: Boolean,
-    isOrganizer: { type: Boolean, default: false }
+    isOrganizer: { type: Boolean, default: false },
+    guests: { type: Number, default: 0 }
   },
   { timestamps: true, _id: false, toJSON: { virtuals: true } }
 )

@@ -6,7 +6,7 @@ import {
   forwardRef
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { FilterQuery, Model } from 'mongoose'
+import { FilterQuery, Model, UpdateQuery } from 'mongoose'
 
 import { EventDocument, EVENT_COLLECTION_NAME } from './schemas/event.schema'
 import { Event } from './interfaces/event.interface'
@@ -190,17 +190,20 @@ export class EventService {
   async updateEventAttendee(
     eventId: string,
     attendeeId: string,
-    updates: UpdateAttendeeDTO
+    { isGoing, guests }: UpdateAttendeeDTO
   ): Promise<Attendee[]> {
-    // TODO: Check if current user is organizer of the group
     const attendees = await this.getEventAttendees(eventId)
     const isAttendee = attendees.find(({ id }) => id.equals(attendeeId))
 
     if (!isAttendee) throw new NotFoundException('Attendee not found')
 
+    const updateQuery: UpdateQuery<Event> = {}
+    if (isGoing !== undefined) updateQuery['attendees.$.isGoing'] = isGoing
+    if (guests !== undefined) updateQuery['attendees.$.guests'] = guests
+
     const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventId, 'attendees.id': attendeeId },
-      { $set: { 'attendees.$.isGoing': updates.isGoing } },
+      { $set: updateQuery },
       { new: true }
     )
       .populate({
@@ -215,7 +218,7 @@ export class EventService {
   async addEventAttendee(eventId: string, attendeeId: string): Promise<Attendee[]> {
     const eventDoc = await this.EventModel.findOneAndUpdate(
       { _id: eventId, 'attendees.id': { $ne: attendeeId } },
-      { $push: { attendees: { id: attendeeId, isGoing: true } } },
+      { $push: { attendees: { id: attendeeId, isGoing: true, guests: 0 } } },
       { new: true }
     )
       .populate({
