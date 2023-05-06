@@ -155,7 +155,7 @@ export class EventService {
     const newEvent = new this.EventModel({
       ...body,
       picture: `https://res.cloudinary.com/dmtvchdf2/image/upload/v1681317012/groups/${body.groupId}/thumbnail.png`,
-      attendees: [{ id: userId, isGoing: true, isOrganizer: true }]
+      attendees: [{ id: userId, isGoing: true, isOrganizer: true, guests: 0 }]
     })
     return this.convertEventDocumentToEvent(await newEvent.save())
   }
