@@ -7,8 +7,8 @@ import { PostCommentSchema } from './post-comment.schema'
 export const PostSchema = new Schema(
   {
     createdById: { type: Schema.Types.ObjectId, ref: USER_COLLECTION_NAME, required: true },
-    sourceId: { type: Schema.Types.ObjectId, required: true, refPath: 'sourceModel' },
-    sourceModel: {
+    entityId: { type: Schema.Types.ObjectId, required: true, refPath: 'entityModel' },
+    entityModel: {
       type: String,
       required: true,
       enum: [EVENT_COLLECTION_NAME, GROUP_COLLECTION_NAME]

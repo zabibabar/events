@@ -21,7 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private userService: UserService) {}
 
   @Post()
   createUser(@Body() createUserDTO: CreateUserDTO): Promise<User> {

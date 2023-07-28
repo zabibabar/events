@@ -10,7 +10,7 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(USER_COLLECTION_NAME) private readonly UserModel: Model<UserDocument>,
+    @InjectModel(USER_COLLECTION_NAME) private UserModel: Model<UserDocument>,
     private cloudinary: CloudinaryService
   ) {}
 

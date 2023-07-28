@@ -15,7 +15,7 @@ import { EventService } from 'src/events/event.service'
 @Injectable()
 export class GroupMemberService {
   constructor(
-    @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>,
+    @InjectModel(GROUP_COLLECTION_NAME) private GroupModel: Model<GroupDocument>,
     @Inject(forwardRef(() => EventService)) private eventService: EventService
   ) {}
 

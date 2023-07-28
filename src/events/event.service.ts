@@ -23,7 +23,7 @@ import { GroupService } from 'src/groups/group.service'
 @Injectable()
 export class EventService {
   constructor(
-    @InjectModel(EVENT_COLLECTION_NAME) private readonly EventModel: Model<EventDocument>,
+    @InjectModel(EVENT_COLLECTION_NAME) private EventModel: Model<EventDocument>,
     private groupMemberService: GroupMemberService,
     @Inject(forwardRef(() => GroupService)) private groupService: GroupService,
     private cloudinary: CloudinaryService

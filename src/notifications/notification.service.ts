@@ -1,66 +1,49 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { FilterQuery, Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { NOTIFICATION_COLLECTION_NAME, NotificationDocument } from './schemas/notification.schema'
 import { Notification } from './interfaces/notification.interface'
 import { NotificationQueryParamDTO } from './dto/notification-query-param.dto'
 import { NotificationType } from './enums/notification-type.enum'
+import { Sender } from './interfaces/sender.interface'
+import { NotificationFactoryRegistry } from './factories/notification-factory-registry'
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectModel(NOTIFICATION_COLLECTION_NAME)
-    private readonly NotificationModel: Model<NotificationDocument>
+    private NotificationModel: Model<NotificationDocument>,
+    private notificationFactoryRegistry: NotificationFactoryRegistry
   ) {}
 
   async getNotifications(
     userId: string,
-    queryParams: NotificationQueryParamDTO
+    { limit, skip, isRead }: NotificationQueryParamDTO
   ): Promise<Notification[]> {
-    const filterQuery = this.getFilterQueryFromQueryParams(queryParams)
-
-    return this.NotificationModel.find({ recipientId: userId, ...filterQuery })
-      .limit(queryParams.limit)
-      .skip(queryParams.skip)
+    return this.NotificationModel.find({ recipientId: userId, isRead })
+      .limit(limit)
+      .skip(skip)
       .exec()
   }
 
-  async getNotificationCount(
+  async createNotification(
+    notificationType: NotificationType,
+    entityId: Types.ObjectId,
+    senders: Sender[] = []
+  ): Promise<Notification> {
+    const factory = this.notificationFactoryRegistry.getNotificationFactory(notificationType)
+    const notification = await factory.createNotification(entityId, senders)
+    return this.NotificationModel.create(notification)
+  }
+
+  async changeNotificationReadStatus(
+    notificationId: string,
     userId: string,
-    queryParams: NotificationQueryParamDTO
-  ): Promise<number> {
-    const filterQuery = this.getFilterQueryFromQueryParams(queryParams)
-
-    return this.NotificationModel.count({ recipientId: userId, ...filterQuery }).exec()
-  }
-
-  private getFilterQueryFromQueryParams(
-    queryParams: NotificationQueryParamDTO
-  ): FilterQuery<NotificationDocument> {
-    const { isRead, groupId, eventId, currentDate } = queryParams
-    const filterQuery: FilterQuery<NotificationDocument> = {}
-
-    if (isRead) filterQuery.readAt = { $lt: currentDate }
-    if (isRead === false) filterQuery.readAt = undefined
-    if (groupId) filterQuery.groupId = groupId
-    else if (eventId) filterQuery.eventId = eventId
-
-    return filterQuery
-  }
-
-  async createNotification(type: NotificationType): Promise<void> {
-    await this.createNotificationFromType(type).save()
-  }
-
-  private createNotificationFromType(type: NotificationType): NotificationDocument {
-    // TODO: create factory class with strategies to create notifications
-    return new this.NotificationModel()
-  }
-
-  async markNotificationAsRead(notificationId: string, currentDate: Date): Promise<Notification> {
+    isRead: boolean
+  ): Promise<Notification> {
     const notificationDoc = await this.NotificationModel.findOneAndUpdate(
-      { _id: notificationId },
-      { $set: { readAt: currentDate } },
+      { _id: notificationId, 'recipient.id': userId },
+      { $set: { 'recipient.$.isRead': isRead } },
       { new: true }
     ).exec()
 

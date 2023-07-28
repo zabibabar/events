@@ -17,7 +17,7 @@ import { GroupQueryParamDTO } from './dto/group-query-param.dto'
 @Injectable()
 export class GroupService {
   constructor(
-    @InjectModel(GROUP_COLLECTION_NAME) private readonly GroupModel: Model<GroupDocument>,
+    @InjectModel(GROUP_COLLECTION_NAME) private GroupModel: Model<GroupDocument>,
     @Inject(forwardRef(() => EventService)) private eventService: EventService,
     private cloudinary: CloudinaryService
   ) {}
