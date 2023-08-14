@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module'
 import { EventsModule } from './events/event.module'
 import { GroupModule } from './groups/group.module'
 import { UserModule } from './users/user.module'
+import { TasksModule } from './tasks/task.module'
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UserModule } from './users/user.module'
     EventsModule,
     GroupModule,
     UserModule,
+    TasksModule,
     AuthModule
   ]
 })

@@ -8,6 +8,7 @@ export const TaskAssignmentSchema = new Schema<TaskAssignment>(
     notes: { type: String }
   },
   {
+    _id: false,
     toJSON: {
       virtuals: true,
       transform: (_, ret) => {
@@ -19,9 +20,9 @@ export const TaskAssignmentSchema = new Schema<TaskAssignment>(
   }
 )
 
-TaskAssignmentSchema.virtual('createdBy', {
+TaskAssignmentSchema.virtual('user', {
   ref: USER_COLLECTION_NAME,
-  localField: 'id',
+  localField: 'userId',
   foreignField: '_id',
   justOne: true
 })

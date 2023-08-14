@@ -4,6 +4,9 @@ import { Model } from 'mongoose'
 import { TASK_LIST_COLLECTION_NAME, TaskListDocument } from './schemas/task-list.schema'
 import { TaskList } from './interfaces/task-list.interface'
 import { Task } from './interfaces/task.interface'
+import { TaskUpdateDTO } from './dto/task-update.dto'
+import { TaskCreateDTO } from './dto/task-create.dto'
+import { TaskListUpdateDTO } from './dto/task-list-update.dto'
 
 @Injectable()
 export class TaskService {
@@ -12,16 +15,26 @@ export class TaskService {
   ) {}
 
   async getAllTaskLists(eventId: string): Promise<TaskList[]> {
-    const taskLists = await this.TaskListModel.find({ eventId }).exec()
+    const taskLists = await this.TaskListModel.find({ eventId })
+      .populate({
+        path: 'tasks.assignedTo.user',
+        select: 'name picture'
+      })
+      .exec()
     return taskLists.map((taskListDoc) => this.convertTaskListDocumentToTaskList(taskListDoc))
   }
 
   private async getTaskList(id: string): Promise<TaskList> {
-    const taskListDoc = await this.TaskListModel.findById(id).exec()
+    const taskListDoc = await this.TaskListModel.findById(id)
+      .populate({
+        path: 'tasks.assignedTo.user',
+        select: 'name picture'
+      })
+      .exec()
     return this.convertTaskListDocumentToTaskList(taskListDoc)
   }
 
-  async createTaskList(body: { name: string }, eventId: string): Promise<TaskList> {
+  async createTaskList(body: TaskCreateDTO, eventId: string): Promise<TaskList> {
     const newTaskList = new this.TaskListModel({
       ...body,
       tasks: [],
@@ -31,45 +44,58 @@ export class TaskService {
     return this.convertTaskListDocumentToTaskList(await newTaskList.save())
   }
 
-  async updateTaskList(taskListId: string, taskListFields: { name: string }): Promise<TaskList> {
+  async updateTaskList(taskListId: string, taskListFields: TaskListUpdateDTO): Promise<TaskList> {
     const taskListDoc = await this.TaskListModel.findByIdAndUpdate(
       taskListId,
       { $set: taskListFields },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'tasks.assignedTo.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.convertTaskListDocumentToTaskList(taskListDoc)
   }
 
   async deleteTaskList(taskListId: string): Promise<void> {
-    const result = await this.TaskListModel.deleteOne({ _id: taskListId }).exec()
+    const result = await this.TaskListModel.deleteOne({ _id: taskListId })
+      .populate({
+        path: 'tasks.assignedTo.user',
+        select: 'name picture'
+      })
+      .exec()
     if (result.deletedCount === 0) throw new NotFoundException('Task List not found')
   }
 
-  async addTaskToList(
-    taskListId: string,
-    task: { name: string; description: string }
-  ): Promise<Task[]> {
+  async addTaskToList(taskListId: string, task: TaskCreateDTO): Promise<Task[]> {
     const taskListDoc = await this.TaskListModel.findByIdAndUpdate(
       taskListId,
       { $push: { tasks: { ...task, assignedTo: [] } } },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'tasks.assignedTo.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.convertTaskListDocumentToTaskList(taskListDoc).tasks
   }
 
-  async updateTask(
-    taskListId: string,
-    taskId: string,
-    task: { name: string; description: string }
-  ): Promise<Task[]> {
+  async updateTask(taskListId: string, taskId: string, task: TaskUpdateDTO): Promise<Task[]> {
     const taskListDoc = await this.TaskListModel.findOneAndUpdate(
-      { _id: taskListId, 'tasks.id': taskId },
+      { _id: taskListId, 'tasks._id': taskId },
       { $set: { 'tasks.$.name': task.name, 'tasks.$.description': task.description } },
       { new: true }
-    ).exec()
-
+    )
+      .populate({
+        path: 'tasks.assignedTo.user',
+        select: 'name picture'
+      })
+      .exec()
+    console.log(taskListDoc)
     return this.convertTaskListDocumentToTaskList(taskListDoc).tasks
   }
 
@@ -78,27 +104,42 @@ export class TaskService {
       { _id: taskListId },
       { $pull: { tasks: { id: taskId } } },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'tasks.assignedTo.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.convertTaskListDocumentToTaskList(taskListDoc).tasks
   }
 
   async assignTask(taskListId: string, taskId: string, userId: string): Promise<Task[]> {
     const taskListDoc = await this.TaskListModel.findOneAndUpdate(
-      { _id: taskListId, 'tasks.id': taskId },
+      { _id: taskListId, 'tasks._id': taskId },
       { $push: { 'tasks.$.assignedTo': { userId } } },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'tasks.assignedTo.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.convertTaskListDocumentToTaskList(taskListDoc).tasks
   }
 
   async unassignTask(taskListId: string, taskId: string, userId: string): Promise<Task[]> {
     const taskListDoc = await this.TaskListModel.findOneAndUpdate(
-      { _id: taskListId, 'tasks.id': taskId },
+      { _id: taskListId, 'tasks._id': taskId },
       { $pull: { 'tasks.$.assignedTo': { userId } } },
       { new: true }
-    ).exec()
+    )
+      .populate({
+        path: 'tasks.assignedTo.user',
+        select: 'name picture'
+      })
+      .exec()
 
     return this.convertTaskListDocumentToTaskList(taskListDoc).tasks
   }

@@ -5,6 +5,10 @@ import { MongoIdParams } from './dto/mongo-id-params.dto'
 import { Task } from './interfaces/task.interface'
 import { UserExternalId } from 'src/users/decorators/user-external-id.decorator'
 import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.pipe'
+import { TaskUpdateDTO } from './dto/task-update.dto'
+import { TaskCreateDTO } from './dto/task-create.dto'
+import { TaskListUpdateDTO } from './dto/task-list-update.dto'
+import { TaskListCreateDTO } from './dto/task-list-create.dto'
 
 @Controller('events/:eventId/task-lists')
 export class TaskController {
@@ -18,7 +22,7 @@ export class TaskController {
   @Post()
   createTaskList(
     @Param() { eventId }: MongoIdParams,
-    @Body() body: { name: string }
+    @Body() body: TaskListCreateDTO
   ): Promise<TaskList> {
     return this.taskService.createTaskList(body, eventId)
   }
@@ -26,7 +30,7 @@ export class TaskController {
   @Patch(':taskListId')
   updateTaskList(
     @Param() { taskListId }: MongoIdParams,
-    @Body() body: { name: string }
+    @Body() body: TaskListUpdateDTO
   ): Promise<TaskList> {
     return this.taskService.updateTaskList(taskListId, body)
   }
@@ -36,28 +40,28 @@ export class TaskController {
     return this.taskService.deleteTaskList(taskListId)
   }
 
-  @Post(':taskListId')
+  @Post(':taskListId/tasks')
   addTaskToList(
     @Param() { taskListId }: MongoIdParams,
-    @Body() body: { name: string; description: string }
+    @Body() body: TaskCreateDTO
   ): Promise<Task[]> {
     return this.taskService.addTaskToList(taskListId, body)
   }
 
-  @Patch(':taskListId/:taskId')
+  @Patch(':taskListId/tasks/:taskId')
   updateTask(
     @Param() { taskListId, taskId }: MongoIdParams,
-    @Body() body: { name: string; description: string }
+    @Body() body: TaskUpdateDTO
   ): Promise<Task[]> {
     return this.taskService.updateTask(taskListId, taskId, body)
   }
 
-  @Delete(':taskListId/:taskId')
+  @Delete(':taskListId/tasks/:taskId')
   deleteTask(@Param() { taskListId, taskId }: MongoIdParams): Promise<Task[]> {
     return this.taskService.deleteTask(taskListId, taskId)
   }
 
-  @Post(':taskListId/:taskId/assign')
+  @Post(':taskListId/tasks/:taskId/assign')
   assignTask(
     @Param() { taskListId, taskId }: MongoIdParams,
     @UserExternalId(UserIdByExternalIdPipe) userId: string
@@ -65,7 +69,7 @@ export class TaskController {
     return this.taskService.assignTask(taskListId, taskId, userId)
   }
 
-  @Delete(':taskListId/:taskId/assign')
+  @Delete(':taskListId/tasks/:taskId/assign')
   unassignTask(
     @Param() { taskListId, taskId }: MongoIdParams,
     @UserExternalId(UserIdByExternalIdPipe) userId: string
