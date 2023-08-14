@@ -95,14 +95,14 @@ export class TaskService {
         select: 'name picture'
       })
       .exec()
-    console.log(taskListDoc)
+
     return this.convertTaskListDocumentToTaskList(taskListDoc).tasks
   }
 
   async deleteTask(taskListId: string, taskId: string): Promise<Task[]> {
     const taskListDoc = await this.TaskListModel.findOneAndUpdate(
       { _id: taskListId },
-      { $pull: { tasks: { id: taskId } } },
+      { $pull: { tasks: { _id: taskId } } },
       { new: true }
     )
       .populate({
