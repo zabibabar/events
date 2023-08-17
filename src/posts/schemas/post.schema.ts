@@ -3,8 +3,13 @@ import { EVENT_COLLECTION_NAME } from 'src/events/schemas/event.schema'
 import { GROUP_COLLECTION_NAME } from 'src/groups/schemas/group.schema'
 import { USER_COLLECTION_NAME } from 'src/users/schemas/user.schema'
 import { PostCommentSchema } from './post-comment.schema'
+import { Post } from '../interfaces/post.interface'
+import { LikeSchema } from './like.schema'
 
-export const PostSchema = new Schema(
+export type PostDocument = HydratedDocument<Post>
+export const POST_COLLECTION_NAME = 'Posts'
+
+export const PostSchema = new Schema<Post>(
   {
     createdById: { type: Schema.Types.ObjectId, ref: USER_COLLECTION_NAME, required: true },
     sourceId: { type: Schema.Types.ObjectId, required: true, refPath: 'sourceModel' },
@@ -15,10 +20,7 @@ export const PostSchema = new Schema(
     },
     body: { type: String, required: true },
     comments: { type: [PostCommentSchema], default: [] },
-    likes: {
-      type: [{ type: Schema.Types.ObjectId, ref: USER_COLLECTION_NAME }],
-      default: []
-    }
+    likes: { type: [LikeSchema], default: [] }
   },
   {
     toJSON: {

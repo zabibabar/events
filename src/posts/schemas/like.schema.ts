@@ -1,12 +1,9 @@
 import { Schema } from 'mongoose'
 import { USER_COLLECTION_NAME } from 'src/users/schemas/user.schema'
-import { LikeSchema } from './like.schema'
 
-export const PostCommentSchema = new Schema(
+export const LikeSchema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: USER_COLLECTION_NAME, required: true },
-    body: { type: String, required: true },
-    likes: { type: [LikeSchema], default: [] }
+    userId: { type: Schema.Types.ObjectId, ref: USER_COLLECTION_NAME, required: true }
   },
   {
     toJSON: {
@@ -20,7 +17,7 @@ export const PostCommentSchema = new Schema(
   }
 )
 
-PostCommentSchema.virtual('createdBy', {
+LikeSchema.virtual('createdBy', {
   ref: USER_COLLECTION_NAME,
   localField: 'userId',
   foreignField: '_id',

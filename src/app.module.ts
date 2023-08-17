@@ -4,8 +4,9 @@ import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose'
 
 import { AuthModule } from './auth/auth.module'
 import { EventsModule } from './events/event.module'
-import { GroupModule } from './groups/group.module'
-import { UserModule } from './users/user.module'
+import { GroupsModule } from './groups/group.module'
+import { UsersModule } from './users/user.module'
+import { PostsModule } from './posts/post.module'
 
 @Module({
   imports: [
@@ -20,8 +21,9 @@ import { UserModule } from './users/user.module'
       })
     }),
     EventsModule,
-    GroupModule,
-    UserModule,
+    GroupsModule,
+    UsersModule,
+    PostsModule,
     AuthModule
   ]
 })
