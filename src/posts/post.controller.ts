@@ -7,6 +7,8 @@ import { UserIdByExternalIdPipe } from 'src/users/pipes/user-id-by-external-id.p
 import { PostUpdateDTO } from './dto/post-update.dto'
 import { PostCreateDTO } from './dto/post-create.dto'
 import { PostComment } from './interfaces/post-comment.interface'
+import { PostCommentUpdateDTO } from './dto/post-comment-update.dto'
+import { PostCommentCreateDTO } from './dto/post-comment-create.dto'
 
 @Controller('posts')
 export class PostController {
@@ -48,10 +50,10 @@ export class PostController {
     return this.postService.unlikePost(postId, userId)
   }
 
-  @PostReq(':postId/posts')
+  @PostReq(':postId/comments')
   addCommentToPost(
     @Param() { postId }: PostParams,
-    @Body() body: PostCreateDTO
+    @Body() body: PostCommentCreateDTO
   ): Promise<PostComment[]> {
     return this.postService.addCommentToPost(postId, body)
   }
@@ -59,7 +61,7 @@ export class PostController {
   @Patch(':postId/comments/:commentId')
   updateComment(
     @Param() { postId, commentId }: PostParams,
-    @Body() body: PostUpdateDTO
+    @Body() body: PostCommentUpdateDTO
   ): Promise<PostComment[]> {
     return this.postService.updateComment(postId, commentId, body)
   }

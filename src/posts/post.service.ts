@@ -7,6 +7,7 @@ import { PostCreateDTO } from './dto/post-create.dto'
 import { PostUpdateDTO } from './dto/post-update.dto'
 import { PostComment } from './interfaces/post-comment.interface'
 import { PostCommentUpdateDTO } from './dto/post-comment-update.dto'
+import { PostCommentCreateDTO } from './dto/post-comment-create.dto'
 
 @Injectable()
 export class PostService {
@@ -82,7 +83,7 @@ export class PostService {
     return this.convertPostDocumentToPost(postDoc)
   }
 
-  async addCommentToPost(postId: string, post: PostCreateDTO): Promise<PostComment[]> {
+  async addCommentToPost(postId: string, post: PostCommentCreateDTO): Promise<PostComment[]> {
     const postDoc = await this.PostModel.findByIdAndUpdate(
       postId,
       { $push: { posts: { ...post, likes: [] } } },
